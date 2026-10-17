@@ -2,541 +2,751 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quyết Chiến Tiền Thưởng - Simulator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wild Bounty Showdown - Quyết Chiến Giành Tiền Thưởng</title>
   <style>
     :root {
-      --gold: #ffcc33;
-      --gold-glow: #ff9900;
-      --wood-dark: #2c1606;
-      --wood-mid: #4a250a;
-      --accent: #ff3b30;
+      --gold: #ffcf40;
+      --gold-dark: #b87300;
+      --wood-light: #7c471e;
+      --wood-mid: #4e290d;
+      --wood-dark: #261204;
+      --felt-green: #143627;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     body {
-      background: radial-gradient(circle at center, #3b1d0b 0%, #120802 100%);
+      background: radial-gradient(circle at top, #542c12 0%, #140802 100%);
       color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 10px;
     }
-    .game-container {
+    .game-wrapper {
       width: 100%;
-      max-width: 460px;
-      background: linear-gradient(180deg, #3d1c05 0%, #1f0d02 100%);
-      border: 3px solid var(--gold);
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(255, 170, 0, 0.35), inset 0 0 15px #000;
+      max-width: 430px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: linear-gradient(180deg, #6e4526 0%, #3a1e0b 65%, var(--felt-green) 65%, #0a1f16 100%);
+      border-left: 2px solid #4a2810;
+      border-right: 2px solid #4a2810;
+      position: relative;
       overflow: hidden;
-      padding: 12px;
     }
-    .header {
-      text-align: center;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #663814;
+
+    /* Thanh công cụ chỉnh Tỷ Lệ Nổ Scatter */
+    .admin-bar {
+      background: rgba(0, 0, 0, 0.85);
+      border-bottom: 1px solid var(--gold);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.75rem;
+      z-index: 10;
     }
-    .header h1 {
-      font-size: 1.25rem;
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 6px #000, 0 0 10px var(--gold-glow);
-    }
-    .free-spin-banner {
-      display: none;
-      background: linear-gradient(90deg, #b31217, #e52d27, #b31217);
-      padding: 4px 10px;
-      border-radius: 6px;
+    .admin-bar label { color: var(--gold); font-weight: bold; white-space: nowrap; }
+    .admin-bar input[type="range"] { flex: 1; accent-color: var(--gold); cursor: pointer; }
+    .btn-force {
+      background: linear-gradient(180deg, #ff512f, #dd2476);
+      color: #fff;
+      border: 1px solid #fff;
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 0.7rem;
       font-weight: bold;
-      font-size: 0.9rem;
-      margin-top: 6px;
-      animation: pulse 1s infinite alternate;
+      cursor: pointer;
+      white-space: nowrap;
     }
-    /* Thanh Hệ Số Nhân (x1 -> x1024) */
-    .multiplier-bar {
+    .btn-force.active {
+      background: #00e676;
+      color: #000;
+      box-shadow: 0 0 8px #00e676;
+    }
+
+    /* Vòm Hệ Số Nhân trên cùng (x1 -> x1024) */
+    .top-arch {
+      margin: 6px 12px 2px;
+      background: linear-gradient(180deg, #592e12, #2b1405);
+      border: 3px solid #9c632b;
+      border-radius: 40px 40px 12px 12px;
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6), inset 0 2px 6px rgba(255,200,100,0.3);
+      position: relative;
+    }
+    .mult-item {
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #9e7348;
+      transition: all 0.25s ease;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .mult-item.active {
+      font-size: 1.35rem;
+      color: #fff3b0;
+      text-shadow: 0 0 10px #ff8800, 0 2px 2px #000;
+      transform: scale(1.15);
+    }
+
+    /* Khung Bàn Cờ 3600 ĐƯỜNG */
+    .board-frame {
+      margin: 2px 8px;
+      background: linear-gradient(180deg, #42210b 0%, #241004 100%);
+      border: 4px solid #784218;
+      border-radius: 24px 24px 10px 10px;
+      padding: 6px;
+      position: relative;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.75);
+    }
+    .ways-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      background: #170a02;
-      border: 2px solid #8c5319;
-      border-radius: 10px;
-      padding: 8px 10px;
-      margin: 10px 0;
-      overflow: hidden;
+      padding: 0 14px 4px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #ffcf70;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 3px #000;
     }
-    .mult-step {
+    .fs-counter-banner {
+      display: none;
+      text-align: center;
+      background: linear-gradient(90deg, transparent, #b31217, transparent);
+      color: #fff;
+      font-weight: 900;
       font-size: 0.85rem;
-      font-weight: 800;
-      color: #775533;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: all 0.25s ease;
+      padding: 3px 0;
+      margin-bottom: 4px;
+      text-shadow: 0 1px 3px #000;
     }
-    .mult-step.active {
-      color: #1a0900;
-      background: linear-gradient(180deg, #fff2a3 0%, #ffaa00 100%);
-      box-shadow: 0 0 12px var(--gold);
-      transform: scale(1.18);
-    }
-    /* Bàn Cờ 3-4-5-5-4-3 */
-    .reels-board {
+
+    /* Lưới 6 Cột 3-4-5-5-4-3 */
+    .reels-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 5px;
+      gap: 4px;
       align-items: center;
-      background: rgba(0, 0, 0, 0.55);
-      border: 2px solid #754214;
-      border-radius: 12px;
-      padding: 10px 6px;
-      min-height: 290px;
+      background: #170a03;
+      border: 2px solid #593010;
+      border-radius: 10px;
+      padding: 6px 4px;
+      min-height: 280px;
     }
     .reel-col {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       justify-content: center;
     }
-    .cell {
-      aspect-ratio: 1 / 1;
-      background: linear-gradient(145deg, #2e190b, #1c0f06);
-      border: 2px solid #5c3515;
-      border-radius: 8px;
+    .symbol-cell {
+      aspect-ratio: 1 / 1.05;
+      background: linear-gradient(180deg, #2d1607 0%, #1a0b03 100%);
+      border: 1.5px solid #4a260c;
+      border-radius: 6px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 1.55rem;
       position: relative;
-      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      transition: transform 0.18s ease;
     }
-    .cell.gold-frame {
-      border: 2px solid var(--gold);
-      background: linear-gradient(145deg, #5e4108, #2b1d02);
-      box-shadow: inset 0 0 8px var(--gold), 0 0 6px rgba(255, 204, 51, 0.5);
+    .symbol-cell .icon {
+      font-size: 1.45rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
     }
-    .cell.wild-cell {
-      border: 2px solid #ff4500;
-      background: radial-gradient(circle, #661400, #240500);
-      box-shadow: 0 0 10px #ff4500;
+    .symbol-cell .tag {
+      font-size: 0.52rem;
+      font-weight: 900;
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-top: 2px;
+      letter-spacing: 0.3px;
     }
-    .cell.scatter-cell {
-      border: 2px solid #00e5ff;
-      background: radial-gradient(circle, #06404a, #02181c);
-      box-shadow: 0 0 10px #00e5ff;
+
+    /* Các loại ô đặc biệt: Khung Vàng, WILD, SCATTER */
+    .symbol-cell.gold-frame {
+      border: 2.5px solid #ffd700;
+      background: radial-gradient(circle, #694b08 0%, #2b1d02 100%);
+      box-shadow: inset 0 0 8px #ffd700, 0 0 6px rgba(255, 215, 0, 0.6);
     }
-    .cell.win {
-      animation: explode 0.45s ease-in-out forwards;
-      border-color: #fff;
-      box-shadow: 0 0 16px var(--gold);
-      z-index: 2;
+    .symbol-cell.gold-frame .tag {
+      background: linear-gradient(90deg, #ffd700, #ff9900);
+      color: #241000;
     }
-    .cell span.label {
-      font-size: 0.55rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      margin-top: -2px;
-      color: var(--gold);
+    .symbol-cell.wild {
+      border: 2px solid #ff3d00;
+      background: radial-gradient(circle, #7a1c00 0%, #2b0700 100%);
+      box-shadow: 0 0 10px rgba(255, 61, 0, 0.8);
     }
-    @keyframes explode {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.22); background: #ffae00; }
-      100% { transform: scale(0.1); opacity: 0; }
-    }
-    @keyframes pulse {
-      from { opacity: 0.85; transform: scale(0.98); }
-      to { opacity: 1; transform: scale(1.02); }
-    }
-    /* Thông báo thắng */
-    .win-banner {
-      text-align: center;
-      background: linear-gradient(90deg, transparent, rgba(255, 180, 0, 0.2), transparent);
-      padding: 8px;
-      margin: 8px 0;
-      border-top: 1px solid #8a5117;
-      border-bottom: 1px solid #8a5117;
-      font-size: 1rem;
-      font-weight: bold;
-      color: var(--gold);
-      min-height: 38px;
-    }
-    /* Bảng điều khiển */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .stat-box {
-      background: #140902;
-      border: 1px solid #593312;
-      border-radius: 8px;
-      padding: 6px;
-      text-align: center;
-    }
-    .stat-title { font-size: 0.7rem; color: #aa8866; }
-    .stat-val { font-size: 0.95rem; font-weight: bold; color: #fff; margin-top: 2px; }
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn {
-      background: linear-gradient(180deg, #5c3312 0%, #331a06 100%);
-      color: #fff;
-      border: 1px solid var(--gold);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.1s, filter 0.2s;
-    }
-    .btn:active { transform: scale(0.95); }
-    .btn.active-mode {
-      background: linear-gradient(180deg, #e68a00 0%, #995c00 100%);
+    .symbol-cell.wild .tag {
+      background: linear-gradient(90deg, #ffdf00, #ff4500);
       color: #000;
     }
-    .btn-spin {
-      flex: 1;
-      background: linear-gradient(180deg, #ffcc33 0%, #cc7a00 100%);
-      color: #261100;
-      font-size: 1.15rem;
-      font-weight: 900;
-      padding: 12px;
-      border: 2px solid #fff3b0;
-      box-shadow: 0 0 15px rgba(255, 204, 51, 0.5);
+    .symbol-cell.scatter {
+      border: 2px solid #ffe600;
+      background: radial-gradient(circle, #8f6800 0%, #2e1f00 100%);
+      box-shadow: 0 0 12px rgba(255, 230, 0, 0.85);
     }
-    .btn-spin:disabled {
-      filter: grayscale(0.8);
-      cursor: not-allowed;
+    .symbol-cell.scatter .tag {
+      background: linear-gradient(90deg, #fff380, #ffae00);
+      color: #361900;
+    }
+
+    /* Hiệu ứng nổ dây chuyền */
+    .symbol-cell.winning {
+      animation: bulletHit 0.42s ease-in-out forwards;
+      border-color: #fff;
+      box-shadow: 0 0 18px #ffd700;
+      z-index: 4;
+    }
+    @keyframes bulletHit {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.22); background: #ffb700; }
+      100% { transform: scale(0.1); opacity: 0; }
+    }
+    .symbol-cell.drop-in {
+      animation: dropDown 0.22s ease-out;
+    }
+    @keyframes dropDown {
+      from { transform: translateY(-25px); opacity: 0.3; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Nút TÍNH NĂNG MUA giống trong video */
+    .buy-feature-btn {
+      position: absolute;
+      right: -2px;
+      bottom: 8px;
+      background: linear-gradient(180deg, #6b3510 0%, #381904 100%);
+      border: 2px solid #ffcf40;
+      border-right: none;
+      border-radius: 10px 0 0 10px;
+      padding: 5px 10px;
+      color: #ffdf80;
+      font-weight: 900;
+      font-size: 0.72rem;
+      text-align: center;
+      box-shadow: -3px 3px 10px rgba(0,0,0,0.7);
+      cursor: pointer;
+      z-index: 5;
+      line-height: 1.15;
+    }
+    .buy-feature-btn:active { transform: scale(0.95); }
+
+    /* Thanh Thông Báo Giữa (Thắng tới 3600 đường / Tổng Thắng) */
+    .marquee-box {
+      margin: 4px 18px;
+      background: linear-gradient(180deg, #3a1c08 0%, #1f0d02 100%);
+      border: 2px solid #b57c3c;
+      border-radius: 20px;
+      padding: 6px 12px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #ffe299;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.6);
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .marquee-box.win-highlight {
+      background: linear-gradient(90deg, #611404, #b83709, #611404);
+      border-color: #ffd700;
+      color: #fff;
+      font-size: 1rem;
+      text-shadow: 0 0 8px #ffd700;
+    }
+
+    /* Khu vực Bàn Xanh Lá & Điều Khiển phía dưới */
+    .bottom-panel {
+      background: radial-gradient(circle at center, #1b4d38 0%, #092117 100%);
+      border-top: 3px solid #6b431e;
+      padding: 8px 12px 14px;
+    }
+    .wallet-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid #4d3319;
+      border-radius: 20px;
+      padding: 5px 10px;
+      margin-bottom: 10px;
+    }
+    .wallet-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #ffd97d;
+    }
+    .wallet-item span.icon-mini { font-size: 0.9rem; }
+
+    /* Hàng nút điều khiển (Turbo, -, Quay, +, Auto) */
+    .control-row {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .ctrl-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #8a6432;
+      color: #ffd97d;
+      font-size: 1.1rem;
+      font-weight: 900;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .ctrl-btn.active {
+      background: #ffae00;
+      color: #000;
+      border-color: #fff;
+      box-shadow: 0 0 10px #ffae00;
+    }
+    /* Nút Quay Ổ Đạn Đồng ở giữa */
+    .spin-revolver {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #d48735 0%, #7d4411 65%, #3d1e04 100%);
+      border: 4px solid #f5b963;
+      box-shadow: 0 0 18px rgba(255, 166, 0, 0.6), inset 0 0 12px #000;
+      color: #fff2cc;
+      font-size: 1.6rem;
+      font-weight: 900;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .spin-revolver:active { transform: scale(0.92); }
+    .spin-revolver.spinning {
+      animation: rotateCylinder 0.6s linear infinite;
+      filter: brightness(1.15);
+    }
+    @keyframes rotateCylinder {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
 
-<div class="game-container">
-  <div class="header">
-    <h1>🤠 Quyết Chiến Tiền Thưởng</h1>
-    <div id="freeSpinBanner" class="free-spin-banner">🔥 VÒNG QUAY MIỄN PHÍ CÒN LẠI: <span id="fsCount">0</span></div>
+<div class="game-wrapper">
+  <!-- Thanh Chỉnh Tỷ Lệ Nổ Scatter Theo Ý Muốn -->
+  <div class="admin-bar">
+    <label for="scatterRange">Tỷ lệ Scatter: <span id="scatterValText">8%</span></label>
+    <input type="range" id="scatterRange" min="2" max="40" value="8" oninput="updateScatterRate(this.value)">
+    <button class="btn-force" id="forceScatterBtn" onclick="toggleForceScatter()">🎯 Ép nổ 3 Scatter</button>
   </div>
 
-  <!-- Thanh Nhân Thưởng -->
-  <div class="multiplier-bar" id="multBar">
-    <div class="mult-step active" id="m1">x1</div>
-    <div class="mult-step" id="m2">x2</div>
-    <div class="mult-step" id="m4">x4</div>
-    <div class="mult-step" id="m8">x8</div>
-    <div class="mult-step" id="m16">x16</div>
-    <div class="mult-step" id="m32">x32</div>
-    <div class="mult-step" id="m64">x64+</div>
+  <!-- Mái Vòm Hệ Số Nhân (x1 -> x1024) -->
+  <div class="top-arch">
+    <div class="mult-item" id="mPrev">x512</div>
+    <div class="mult-item active" id="mCurr">X1</div>
+    <div class="mult-item" id="mNext1">x2</div>
+    <div class="mult-item" id="mNext2">x4</div>
   </div>
 
-  <!-- Bàn Cờ 6 Cột (3-4-5-5-4-3) -->
-  <div class="reels-board" id="board"></div>
-
-  <!-- Thông Báo Nổ Hũ -->
-  <div class="win-banner" id="winBanner">Sẵn sàng quay! Khung vàng thắng sẽ hóa WILD ⭐</div>
-
-  <!-- Thông Số Tiền & Cược -->
-  <div class="stats-row">
-    <div class="stat-box">
-      <div class="stat-title">SỐ DƯ VÍ</div>
-      <div class="stat-val" id="balanceEl">10,000,000</div>
+  <!-- Khung Bàn Cờ Chính -->
+  <div class="board-frame">
+    <div class="ways-header">
+      <span>3600 ĐƯỜNG</span>
+      <span>3600 ĐƯỜNG</span>
     </div>
-    <div class="stat-box">
-      <div class="stat-title">MỨC CƯỢC</div>
-      <div class="stat-val" id="betEl">20,000</div>
+    <div class="fs-counter-banner" id="fsBanner">
+      🔥 VÒNG QUAY MIỄN PHÍ CÒN LẠI: <span id="fsCount">10</span> (NHÂN TỐI THIỂU X8)
     </div>
-    <div class="stat-box">
-      <div class="stat-title">THẮNG VÒNG NÀY</div>
-      <div class="stat-val" id="winEl" style="color: var(--gold);">0</div>
+
+    <div class="reels-grid" id="reelsGrid"></div>
+
+    <!-- Nút TÍNH NĂNG MUA như trong video -->
+    <div class="buy-feature-btn" onclick="buyFreeSpins()">
+      TÍNH NĂNG<br>MUA
     </div>
   </div>
 
-  <!-- Nút Điều Khiển -->
-  <div class="controls">
-    <button class="btn" onclick="changeBet(-1)">-</button>
-    <button class="btn" onclick="changeBet(1)">+</button>
-    <button class="btn btn-spin" id="spinBtn" onclick="startSpin()">QUAY</button>
-    <button class="btn" id="turboBtn" onclick="toggleTurbo()">⚡</button>
-    <button class="btn" id="autoBtn" onclick="toggleAuto()">AUTO</button>
+  <!-- Thanh Thông Báo Thắng -->
+  <div class="marquee-box" id="marqueeBox">
+    Nhận WILD với Biểu tượng Khung Vàng!
+  </div>
+
+  <!-- Bàn Điều Khiển Phía Dưới -->
+  <div class="bottom-panel">
+    <div class="wallet-bar">
+      <div class="wallet-item"><span class="icon-mini">💼</span> đ<span id="balText">100.00</span></div>
+      <div class="wallet-item"><span class="icon-mini">🏆</span> đ<span id="winText">0.00</span></div>
+      <div class="wallet-item"><span class="icon-mini">🪙</span> đ<span id="betText">2.00</span></div>
+    </div>
+
+    <div class="control-row">
+      <button class="ctrl-btn" id="turboBtn" onclick="toggleTurbo()" title="Quay Nhanh">⚡</button>
+      <button class="ctrl-btn" onclick="adjustBet(-1)">−</button>
+      <button class="spin-revolver" id="spinBtn" onclick="spin()">↻</button>
+      <button class="ctrl-btn" onclick="adjustBet(1)">+</button>
+      <button class="ctrl-btn" id="autoBtn" onclick="toggleAuto()" style="font-size: 0.72rem;">AUTO</button>
+    </div>
   </div>
 </div>
 
 <script>
-  // Cấu hình chuẩn 6 cột: 3-4-5-5-4-3
-  const REEL_HEIGHTS = [3, 4, 5, 5, 4, 3];
-  const BET_LEVELS = [2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
+  // Cấu trúc 6 cột chuẩn: 3-4-5-5-4-3
+  const COL_HEIGHTS = [3, 4, 5, 5, 4, 3];
+  const BET_OPTIONS = [0.40, 1.00, 2.00, 5.00, 10.00, 20.00, 50.00];
 
+  // Danh sách biểu tượng khớp với video
   const SYMBOLS = [
-    { id: 'COWBOY', icon: '🤠', pay: 2.5, weight: 8 },
-    { id: 'GUN',    icon: '🔫', pay: 1.5, weight: 12 },
-    { id: 'HAT',    icon: '🎩', pay: 1.0, weight: 15 },
-    { id: 'DRINK',  icon: '🥃', pay: 0.8, weight: 18 },
-    { id: 'A',      icon: '🅰️', pay: 0.5, weight: 24 },
-    { id: 'K',      icon: '🅺', pay: 0.4, weight: 26 },
-    { id: 'Q',      icon: '🆀', pay: 0.3, weight: 28 },
-    { id: 'J',      icon: '🅹', pay: 0.2, weight: 30 },
-    { id: 'WILD',   icon: '⭐', pay: 0,   weight: 4 },
-    { id: 'SCATTER',icon: '🪙', pay: 0,   weight: 3 }
+    { id: 'BANDIT',  icon: '🤠', pay: 2.5, weight: 9 },
+    { id: 'GUN',     icon: '🔫', pay: 1.5, weight: 12 },
+    { id: 'HAT',     icon: '🎩', pay: 1.0, weight: 15 },
+    { id: 'WHISKEY', icon: '🥃', pay: 0.8, weight: 18 },
+    { id: 'A',       icon: '🅰️', pay: 0.5, weight: 24 },
+    { id: 'K',       icon: '🅺', pay: 0.4, weight: 26 },
+    { id: 'Q',       icon: '🆀', pay: 0.3, weight: 28 },
+    { id: 'J',       icon: '🅹', pay: 0.2, weight: 30 },
+    { id: 'WILD',    icon: '🤠', pay: 0,   weight: 4 }
   ];
 
-  let balance = 10000000;
-  let betIndex = 3;
-  let currentWin = 0;
-  let multiplier = 1;
+  let balance = 100.00;
+  let betIdx = 2; // Mặc định đ2.00 giống trong video
+  let roundWin = 0.00;
+  let currentMult = 1;
+  let scatterProb = 0.08; // Mặc định 8% mỗi ô
+  let forceNextScatter = false;
+  let freeSpinsLeft = 0;
   let isSpinning = false;
   let isTurbo = false;
   let isAuto = false;
-  let freeSpins = 0;
-  let grid = [];
+  let board = [];
 
-  const boardEl = document.getElementById('board');
-  const balanceEl = document.getElementById('balanceEl');
-  const betEl = document.getElementById('betEl');
-  const winEl = document.getElementById('winEl');
-  const winBanner = document.getElementById('winBanner');
-  const spinBtn = document.getElementById('spinBtn');
-
-  function randomSymbol(colIndex) {
-    const totalWeight = SYMBOLS.reduce((acc, s) => acc + s.weight, 0);
-    let r = Math.random() * totalWeight;
-    let picked = SYMBOLS[0];
-    for (const s of SYMBOLS) {
-      if (r < s.weight) { picked = s; break; }
-      r -= s.weight;
-    }
-    // Khung vàng chỉ xuất hiện ở cột 2, 3, 4, 5 (index 1..4) trên các biểu tượng thường
-    const canBeGold = colIndex >= 1 && colIndex <= 4 && picked.id !== 'WILD' && picked.id !== 'SCATTER';
-    const isGold = canBeGold && Math.random() < 0.22;
-    return { ...picked, isGold, toExplode: false };
+  // Khởi tạo âm thanh tự động bằng Web Audio API
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playTone(freq, duration, type = 'sine') {
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {}
   }
 
-  function initGrid() {
-    grid = REEL_HEIGHTS.map((height, colIdx) => {
+  function updateScatterRate(val) {
+    scatterProb = parseInt(val, 10) / 100;
+    document.getElementById('scatterValText').textContent = val + '%';
+  }
+
+  function toggleForceScatter() {
+    forceNextScatter = !forceNextScatter;
+    document.getElementById('forceScatterBtn').classList.toggle('active', forceNextScatter);
+  }
+
+  function createRandomCell(colIdx, allowScatter = true) {
+    // Kiểm tra rơi SCATTER dựa trên thanh trượt tỷ lệ của người dùng
+    if (allowScatter && Math.random() < scatterProb) {
+      return { id: 'SCATTER', icon: '🪙', pay: 0, isGold: false, explode: false, isNew: true };
+    }
+
+    const totalW = SYMBOLS.reduce((sum, s) => sum + s.weight, 0);
+    let r = Math.random() * totalW;
+    let chosen = SYMBOLS[0];
+    for (const s of SYMBOLS) {
+      if (r < s.weight) { chosen = s; break; }
+      r -= s.weight;
+    }
+
+    // Khung Vàng xuất hiện ở cột 2, 3, 4, 5 (index 1..4)
+    const canGold = colIdx >= 1 && colIdx <= 4 && chosen.id !== 'WILD';
+    const isGold = canGold && Math.random() < 0.25;
+    return { ...chosen, isGold, explode: false, isNew: true };
+  }
+
+  function generateBoard() {
+    board = COL_HEIGHTS.map((h, cIdx) => {
       const col = [];
-      for (let r = 0; r < height; r++) {
-        col.push(randomSymbol(colIdx));
+      for (let r = 0; r < h; r++) {
+        // Không cho phép 2 Scatter nằm cùng 1 cột
+        const hasScatterInCol = col.some(item => item.id === 'SCATTER');
+        col.push(createRandomCell(cIdx, !hasScatterInCol));
       }
       return col;
     });
-    renderGrid();
+
+    // Nếu bật nút "Ép nổ 3 Scatter", đặt chắc chắn 3 Scatter vào 3 cột ngẫu nhiên
+    if (forceNextScatter) {
+      const cols = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5).slice(0, 3);
+      cols.forEach(c => {
+        // Xóa scatter cũ trong cột (nếu có) rồi gán 1 ô chắc chắn là SCATTER
+        board[c].forEach(cell => { if (cell.id === 'SCATTER') Object.assign(cell, SYMBOLS[4]); });
+        const randRow = Math.floor(Math.random() * COL_HEIGHTS[c]);
+        board[c][randRow] = { id: 'SCATTER', icon: '🪙', pay: 0, isGold: false, explode: false, isNew: true };
+      });
+      forceNextScatter = false;
+      document.getElementById('forceScatterBtn').classList.remove('active');
+    }
+
+    renderBoard();
   }
 
-  function renderGrid() {
-    boardEl.innerHTML = '';
-    grid.forEach((col) => {
-      const colDiv = document.createElement('div');
-      colDiv.className = 'reel-col';
-      col.forEach((cell) => {
-        const cellDiv = document.createElement('div');
-        let classes = 'cell';
-        if (cell.isGold) classes += ' gold-frame';
-        if (cell.id === 'WILD') classes += ' wild-cell';
-        if (cell.id === 'SCATTER') classes += ' scatter-cell';
-        if (cell.toExplode) classes += ' win';
-        cellDiv.className = classes;
-        cellDiv.innerHTML = `<div>${cell.icon}</div>` +
-          (cell.id === 'WILD' ? `<span class="label">WILD</span>` :
-           cell.id === 'SCATTER' ? `<span class="label">SCATTER</span>` :
-           cell.isGold ? `<span class="label">GOLD</span>` : '');
-        colDiv.appendChild(cellDiv);
+  function renderBoard() {
+    const gridEl = document.getElementById('reelsGrid');
+    gridEl.innerHTML = '';
+
+    board.forEach(col => {
+      const colEl = document.createElement('div');
+      colEl.className = 'reel-col';
+      col.forEach(cell => {
+        const el = document.createElement('div');
+        let cls = 'symbol-cell';
+        if (cell.isGold) cls += ' gold-frame';
+        if (cell.id === 'WILD') cls += ' wild';
+        if (cell.id === 'SCATTER') cls += ' scatter';
+        if (cell.explode) cls += ' winning';
+        if (cell.isNew) cls += ' drop-in';
+        el.className = cls;
+
+        let tagHTML = '';
+        if (cell.id === 'WILD') tagHTML = '<span class="tag">WILD</span>';
+        else if (cell.id === 'SCATTER') tagHTML = '<span class="tag">SCATTER</span>';
+        else if (cell.isGold) tagHTML = '<span class="tag">KHUNG VÀNG</span>';
+
+        el.innerHTML = `<div class="icon">${cell.icon}</div>${tagHTML}`;
+        colEl.appendChild(el);
+        cell.isNew = false;
       });
-      boardEl.appendChild(colDiv);
+      gridEl.appendChild(colEl);
     });
   }
 
-  function updateMultiplierUI(mult) {
-    document.querySelectorAll('.mult-step').forEach(el => el.classList.remove('active'));
-    const steps = [1, 2, 4, 8, 16, 32];
-    if (steps.includes(mult)) {
-      document.getElementById('m' + mult).classList.add('active');
-      document.getElementById('m64').textContent = 'x64+';
-    } else {
-      const m64 = document.getElementById('m64');
-      m64.classList.add('active');
-      m64.textContent = 'x' + mult;
-    }
+  function updateArchUI(m) {
+    const prev = m === 1 ? 1024 : m / 2;
+    const next1 = m >= 1024 ? 1024 : m * 2;
+    const next2 = next1 >= 1024 ? 1024 : next1 * 2;
+    document.getElementById('mPrev').textContent = 'x' + prev;
+    document.getElementById('mCurr').textContent = 'X' + m;
+    document.getElementById('mNext1').textContent = 'x' + next1;
+    document.getElementById('mNext2').textContent = 'x' + next2;
   }
 
-  function updateStatsUI() {
-    balanceEl.textContent = balance.toLocaleString('vi-VN');
-    betEl.textContent = BET_LEVELS[betIndex].toLocaleString('vi-VN');
-    winEl.textContent = currentWin.toLocaleString('vi-VN');
-    const fsBanner = document.getElementById('freeSpinBanner');
-    if (freeSpins > 0) {
+  function updateWalletUI() {
+    document.getElementById('balText').textContent = balance.toFixed(2);
+    document.getElementById('winText').textContent = roundWin.toFixed(2);
+    document.getElementById('betText').textContent = BET_OPTIONS[betIdx].toFixed(2);
+
+    const fsBanner = document.getElementById('fsBanner');
+    if (freeSpinsLeft > 0) {
       fsBanner.style.display = 'block';
-      document.getElementById('fsCount').textContent = freeSpins;
+      document.getElementById('fsCount').textContent = freeSpinsLeft;
     } else {
       fsBanner.style.display = 'none';
     }
   }
 
-  function evaluateWays() {
-    let totalBaseWin = 0;
-    let anyWin = false;
+  function setMarquee(text, isWin = false) {
+    const box = document.getElementById('marqueeBox');
+    box.textContent = text;
+    box.classList.toggle('win-highlight', isWin);
+  }
 
-    // Lấy danh sách biểu tượng thường để xét từ cột 1 (index 0)
-    const regularSymbols = SYMBOLS.filter(s => s.id !== 'WILD' && s.id !== 'SCATTER');
+  function checkWins() {
+    let baseWin = 0;
+    let foundWin = false;
+    const paySymbols = SYMBOLS.filter(s => s.id !== 'WILD');
 
-    regularSymbols.forEach(sym => {
-      let consecutiveCols = 0;
+    paySymbols.forEach(sym => {
+      let matchedCols = 0;
       let ways = 1;
 
       for (let c = 0; c < 6; c++) {
-        const matchCount = grid[c].filter(cell => cell.id === sym.id || cell.id === 'WILD').length;
-        if (matchCount > 0) {
-          consecutiveCols++;
-          ways *= matchCount;
+        const count = board[c].filter(cell => cell.id === sym.id || cell.id === 'WILD').length;
+        if (count > 0) {
+          matchedCols++;
+          ways *= count;
         } else {
           break;
         }
       }
 
-      if (consecutiveCols >= 3) {
-        anyWin = true;
-        const lengthFactor = consecutiveCols === 3 ? 1 : consecutiveCols === 4 ? 2 : consecutiveCols === 5 ? 4 : 8;
-        totalBaseWin += BET_LEVELS[betIndex] * 0.1 * sym.pay * lengthFactor * ways;
+      if (matchedCols >= 3) {
+        foundWin = true;
+        const colMult = matchedCols === 3 ? 1 : matchedCols === 4 ? 2 : matchedCols === 5 ? 3 : 5;
+        baseWin += BET_OPTIONS[betIdx] * 0.05 * sym.pay * colMult * ways;
 
-        // Đánh dấu các ô thắng để nổ
-        for (let c = 0; c < consecutiveCols; c++) {
-          grid[c].forEach(cell => {
-            if (cell.id === sym.id || cell.id === 'WILD') {
-              cell.toExplode = true;
-            }
+        for (let c = 0; c < matchedCols; c++) {
+          board[c].forEach(cell => {
+            if (cell.id === sym.id || cell.id === 'WILD') cell.explode = true;
           });
         }
       }
     });
 
-    return { anyWin, totalBaseWin: Math.round(totalBaseWin) };
+    return { foundWin, baseWin };
   }
 
-  const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+  const wait = ms => new Promise(r => setTimeout(r, ms));
 
-  async function startSpin() {
+  async function spin() {
     if (isSpinning) return;
-    const bet = BET_LEVELS[betIndex];
+    const bet = BET_OPTIONS[betIdx];
 
-    if (freeSpins === 0 && balance < bet) {
-      winBanner.textContent = '⚠️ Số dư không đủ để quay!';
+    if (freeSpinsLeft === 0 && balance < bet) {
+      setMarquee('⚠️ Số dư không đủ, hãy giảm mức cược!');
       isAuto = false;
-      document.getElementById('autoBtn').classList.remove('active-mode');
+      document.getElementById('autoBtn').classList.remove('active');
       return;
     }
 
     isSpinning = true;
-    spinBtn.disabled = true;
+    const spinBtn = document.getElementById('spinBtn');
+    spinBtn.classList.add('spinning');
+    playTone(220, 0.12, 'triangle');
 
-    if (freeSpins > 0) {
-      freeSpins--;
-      multiplier = 8; // Free Spin khởi điểm hệ số x8
+    if (freeSpinsLeft > 0) {
+      freeSpinsLeft--;
+      currentMult = 8; // Vòng quay miễn phí bắt đầu ở hệ số x8
     } else {
       balance -= bet;
-      currentWin = 0;
-      multiplier = 1;
+      roundWin = 0;
+      currentMult = 1;
     }
 
-    updateMultiplierUI(multiplier);
-    updateStatsUI();
-    winBanner.textContent = 'Đang quay...';
+    updateArchUI(currentMult);
+    updateWalletUI();
+    setMarquee('Thắng tới 3600 đường!', false);
 
-    initGrid();
-    await sleep(isTurbo ? 150 : 350);
+    generateBoard();
+    await wait(isTurbo ? 140 : 320);
 
-    // Vòng lặp nổ dây chuyền (Cascade)
-    let cascadeCount = 0;
+    let step = 0;
     while (true) {
-      const { anyWin, totalBaseWin } = evaluateWays();
-      if (!anyWin) break;
+      const { foundWin, baseWin } = checkWins();
+      if (!foundWin) break;
 
-      cascadeCount++;
-      const stepWin = totalBaseWin * multiplier;
-      currentWin += stepWin;
-      balance += stepWin;
+      step++;
+      const winAmount = +(baseWin * currentMult).toFixed(2);
+      roundWin = +(roundWin + winAmount).toFixed(2);
+      balance = +(balance + winAmount).toFixed(2);
 
-      renderGrid();
-      updateStatsUI();
-      winBanner.textContent = `💥 Nổ nhịp ${cascadeCount}: +${stepWin.toLocaleString('vi-VN')} (Hệ số x${multiplier})`;
+      playTone(440 + step * 110, 0.25, 'sine');
+      renderBoard();
+      updateWalletUI();
+      setMarquee(`THẮNG ${winAmount.toFixed(2)} (X${currentMult})`, true);
 
-      await sleep(isTurbo ? 260 : 550);
+      await wait(isTurbo ? 240 : 520);
 
-      // Xử lý Khung Vàng -> WILD và rơi biểu tượng mới
+      // Xử lý Khung Vàng biến thành WILD và sụp đổ biểu tượng
       for (let c = 0; c < 6; c++) {
-        const nextCol = [];
-        grid[c].forEach(cell => {
-          if (cell.toExplode) {
+        const survivors = [];
+        board[c].forEach(cell => {
+          if (cell.explode) {
             if (cell.isGold) {
-              // Biểu tượng Khung Vàng hóa thành WILD cho nhịp tiếp theo
-              nextCol.push({ id: 'WILD', icon: '⭐', pay: 0, isGold: false, toExplode: false });
+              survivors.push({ id: 'WILD', icon: '🤠', pay: 0, isGold: false, explode: false, isNew: true });
             }
           } else {
-            nextCol.push(cell);
+            survivors.push(cell);
           }
         });
 
-        const missing = REEL_HEIGHTS[c] - nextCol.length;
-        const newCells = [];
-        for (let i = 0; i < missing; i++) {
-          newCells.push(randomSymbol(c));
+        const needed = COL_HEIGHTS[c] - survivors.length;
+        const fresh = [];
+        for (let i = 0; i < needed; i++) {
+          const hasScat = survivors.some(s => s.id === 'SCATTER') || fresh.some(s => s.id === 'SCATTER');
+          fresh.push(createRandomCell(c, !hasScat));
         }
-        grid[c] = [...newCells, ...nextCol];
+        board[c] = [...fresh, ...survivors];
       }
 
-      // Nhân đôi hệ số nhân (tối đa x1024)
-      multiplier = Math.min(1024, multiplier * 2);
-      updateMultiplierUI(multiplier);
-      renderGrid();
-      await sleep(isTurbo ? 180 : 380);
+      currentMult = Math.min(1024, currentMult * 2);
+      updateArchUI(currentMult);
+      renderBoard();
+      await wait(isTurbo ? 180 : 350);
     }
 
-    // Kiểm tra SCATTER kích hoạt Vòng Quay Miễn Phí
-    let scatterCount = 0;
-    grid.forEach(col => col.forEach(cell => { if (cell.id === 'SCATTER') scatterCount++; }));
-    if (scatterCount >= 3) {
-      const addedSpins = 10 + (scatterCount - 3) * 2;
-      freeSpins += addedSpins;
-      winBanner.textContent = `🎉 QUÁ ĐỈNH! Nổ ${scatterCount} SCATTER, nhận +${addedSpins} Vòng Quay Miễn Phí (x8)!`;
-      updateStatsUI();
-      await sleep(1200);
-    } else if (cascadeCount === 0) {
-      winBanner.textContent = 'Chúc bạn may mắn ở lượt quay kế tiếp!';
+    // Kiểm tra nổ SCATTER
+    let scatterTotal = 0;
+    board.forEach(col => col.forEach(cell => { if (cell.id === 'SCATTER') scatterTotal++; }));
+
+    if (scatterTotal >= 3) {
+      const wonSpins = 10 + (scatterTotal - 3) * 2;
+      freeSpinsLeft += wonSpins;
+      playTone(880, 0.5, 'square');
+      setMarquee(`🎉 NỔ ${scatterTotal} SCATTER! +${wonSpins} VÒNG MIỄN PHÍ (X8)`, true);
+      updateWalletUI();
+      await wait(1300);
+    } else if (step > 0) {
+      setMarquee(`TỔNG THẮNG ${roundWin.toFixed(2)}`, true);
     } else {
-      winBanner.textContent = `🏆 Tổng thắng lượt này: ${currentWin.toLocaleString('vi-VN')}!`;
+      setMarquee('3 biểu tượng Scatter sẽ kích hoạt 10 vòng quay miễn phí', false);
     }
 
+    spinBtn.classList.remove('spinning');
     isSpinning = false;
-    spinBtn.disabled = false;
 
-    if (isAuto || freeSpins > 0) {
-      await sleep(isTurbo ? 200 : 500);
-      if (isAuto || freeSpins > 0) startSpin();
+    if (isAuto || freeSpinsLeft > 0) {
+      await wait(isTurbo ? 180 : 450);
+      if (isAuto || freeSpinsLeft > 0) spin();
     }
   }
 
-  function changeBet(dir) {
-    if (isSpinning || freeSpins > 0) return;
-    betIndex = Math.max(0, Math.min(BET_LEVELS.length - 1, betIndex + dir));
-    updateStatsUI();
+  // Nút TÍNH NĂNG MUA giống trong video
+  function buyFreeSpins() {
+    if (isSpinning || freeSpinsLeft > 0) return;
+    const cost = +(BET_OPTIONS[betIdx] * 10).toFixed(2); // Giá mua ưu đãi 10x mức cược để dễ test
+    if (balance < cost) {
+      setMarquee(`⚠️ Cần đ${cost.toFixed(2)} để Mua Tính Năng!`);
+      return;
+    }
+    balance = +(balance - cost).toFixed(2);
+    roundWin = 0;
+    forceNextScatter = true;
+    updateWalletUI();
+    setMarquee('🔥 ĐÃ MUA TÍNH NĂNG! ĐANG QUAY RA 3 SCATTER...', true);
+    spin();
+  }
+
+  function adjustBet(dir) {
+    if (isSpinning || freeSpinsLeft > 0) return;
+    betIdx = Math.max(0, Math.min(BET_OPTIONS.length - 1, betIdx + dir));
+    updateWalletUI();
   }
 
   function toggleTurbo() {
     isTurbo = !isTurbo;
-    document.getElementById('turboBtn').classList.toggle('active-mode', isTurbo);
+    document.getElementById('turboBtn').classList.toggle('active', isTurbo);
   }
 
   function toggleAuto() {
     isAuto = !isAuto;
-    document.getElementById('autoBtn').classList.toggle('active-mode', isAuto);
-    if (isAuto && !isSpinning) startSpin();
+    document.getElementById('autoBtn').classList.toggle('active', isAuto);
+    if (isAuto && !isSpinning) spin();
   }
 
-  initGrid();
-  updateStatsUI();
+  generateBoard();
+  updateWalletUI();
 </script>
 </body>
-        </html>
-
+</html>
