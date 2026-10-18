@@ -46,7 +46,6 @@
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
       letter-spacing: 0.8px;
-      cursor: pointer;
     }
     .title-banner .sub {
       font-size: 0.78rem;
@@ -55,9 +54,8 @@
       letter-spacing: 0.5px;
     }
 
-    /* Thanh điều khiển ẩn mặc định */
     .control-bar {
-      display: none;
+      display: flex;
       width: 100%;
       background: rgba(15, 3, 3, 0.95);
       border: 1.5px solid var(--gold);
@@ -70,7 +68,6 @@
       font-size: 0.78rem;
       z-index: 20;
     }
-    .control-bar.secret-open { display: flex; }
     .control-bar label { color: var(--gold); font-weight: bold; }
     .control-bar select {
       flex: 1;
@@ -93,9 +90,8 @@
       cursor: pointer;
     }
 
-    /* Bảng sửa ô thưởng ẩn mặc định, chỉ mở khi bấm 5 lần vào tiêu đề */
     .editor-panel {
-      display: none;
+      display: block;
       width: 100%;
       background: rgba(22, 5, 5, 0.96);
       border: 1.5px solid var(--gold);
@@ -103,7 +99,6 @@
       padding: 10px;
       z-index: 20;
     }
-    .editor-panel.open { display: block; }
     .editor-row {
       display: grid;
       grid-template-columns: 1.8fr 0.8fr 0.8fr;
@@ -297,20 +292,20 @@
 <body>
 
 <div class="app-container">
-  <!-- Chạm 5 lần liên tiếp vào tiêu đề này để mở/ẩn bảng cài đặt -->
   <div class="title-banner">
-    <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
+    <h1>🎡 Vòng Quay Vé Số Phát Đạt</h1>
     <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
   </div>
 
-  <div class="control-bar" id="secretControlBar">
+  <div class="control-bar">
     <label for="forceSelect">🎯 Chế độ ra giải:</label>
     <select id="forceSelect">
       <option value="-1">🎲 Ngẫu nhiên theo Tỷ lệ %</option>
     </select>
   </div>
 
-  <div class="editor-panel" id="editorPanel">
+  <!-- Bảng chỉnh sửa tích hợp nút Lưu, Mặc định và nút Ngẫu nhiên mới -->
+  <div class="editor-panel">
     <div class="editor-row editor-header">
       <span>Tên ô thưởng</span>
       <span>Số vé cộng</span>
@@ -318,8 +313,9 @@
     </div>
     <div id="editorRows"></div>
     <div class="editor-actions">
-      <button class="btn-edit" style="flex:1; padding:8px;" onclick="saveEditor()">💾 LƯU CẬP NHẬT VÒNG QUAY</button>
-      <button class="btn-edit" style="background:#555; color:#fff; padding:8px;" onclick="resetDefaultPrizes()">🔄 Mặc định</button>
+      <button class="btn-edit" style="flex:1.2; padding:8px;" onclick="saveEditor()">💾 LƯU CẬP NHẬT</button>
+      <button class="btn-edit" style="background:#0288d1; color:#fff; flex:1; padding:8px;" onclick="randomizeWeights()">🎲 Ngẫu nhiên</button>
+      <button class="btn-edit" style="background:#555; color:#fff; flex:1; padding:8px;" onclick="resetDefaultPrizes()">🔄 Mặc định</button>
     </div>
   </div>
 
@@ -359,7 +355,7 @@
 </div>
 
 <script>
-  // TỶ LỆ MẶC ĐỊNH THEO YÊU CẦU: May Mắn Lần Sau (50), Thêm 1 lượt (49), Tặng 1 Vé Số (1), các ô còn lại (0)
+  // Tỷ lệ mặc định ban đầu: May Mắn Lần Sau (50), Thêm 1 lượt (49), Tặng 1 Vé Số (1), các ô khác (0)
   const DEFAULT_PRIZES = [
     { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 0,  color: '#b80f0a', text: '#ffd700' },
     { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 0,  color: '#fff3d1', text: '#6e0d05' },
@@ -371,7 +367,7 @@
     { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 49, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
 
-  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V3')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V4')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
@@ -383,23 +379,6 @@
   let isSpinning = false;
   let totalTickets = 0;
   let historyList = [];
-
-  // Chạm liên tiếp 5 lần vào tiêu đề để mở/ẩn bảng cài đặt
-  let secretTapCount = 0;
-  let secretTapTimer = null;
-  function secretAdminTrigger() {
-    secretTapCount++;
-    clearTimeout(secretTapTimer);
-    if (secretTapCount >= 5) {
-      secretTapCount = 0;
-      const bar = document.getElementById('secretControlBar');
-      const panel = document.getElementById('editorPanel');
-      bar.classList.toggle('secret-open');
-      panel.classList.toggle('open');
-    } else {
-      secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1200);
-    }
-  }
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playTickSound() {
@@ -683,14 +662,25 @@
       p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
-    localStorage.setItem('PHAT_DAT_WHEEL_V3', JSON.stringify(PRIZES));
+    localStorage.setItem('PHAT_DAT_WHEEL_V4', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
     resultBanner.textContent = '✅ Đã lưu cố định danh sách giải thưởng!';
   }
 
+  // Nút Ngẫu nhiên: Tự động trộn tỷ lệ các ô thành số ngẫu nhiên
+  function randomizeWeights() {
+    PRIZES.forEach((p, idx) => {
+      // Gán ngẫu nhiên trọng số từ 5 đến 30 cho mỗi ô
+      p.weight = Math.floor(Math.random() * 26) + 5;
+    });
+    populateControls();
+    drawWheel();
+    resultBanner.textContent = '🎲 Đã trộn tỷ lệ ngẫu nhiên cho các ô!';
+  }
+
   function resetDefaultPrizes() {
-    localStorage.removeItem('PHAT_DAT_WHEEL_V3');
+    localStorage.removeItem('PHAT_DAT_WHEEL_V4');
     PRIZES = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
     populateControls();
     drawWheel();
