@@ -56,7 +56,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Dòng thông báo trạng thái nhận biết trực quan */
+    /* Nhãn trạng thái đổi màu linh hoạt */
     .status-indicator {
       font-size: 0.72rem;
       font-weight: bold;
@@ -66,10 +66,14 @@
       padding: 3px 10px;
       margin-top: 4px;
       display: inline-block;
-      color: #00e676; /* Mặc định màu xanh lá báo đang dùng tỷ lệ mặc định */
+      color: #00e676;
+    }
+    .status-indicator.random-mode {
+      color: #00b0ff;
+      border-color: #00b0ff;
     }
     .status-indicator.admin-active {
-      color: #ff9800; /* Đổi sang màu cam khi đang mở bảng quản lý */
+      color: #ff9800;
       border-color: #ff9800;
     }
 
@@ -314,10 +318,8 @@
 
 <div class="app-container">
   <div class="title-banner">
-    <!-- Chạm liên tiếp 5 lần vào tiêu đề để mở/ẩn bảng quản lý -->
     <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
     <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
-    <!-- Dòng hiển thị trạng thái nhận biết -->
     <div class="status-indicator" id="statusIndicator">🟢 Đang chạy chế độ Mặc định (50, 49, 1)</div>
   </div>
 
@@ -378,7 +380,6 @@
 </div>
 
 <script>
-  // TỶ LỆ MẶC ĐỊNH CHỦ ĐẠO (50, 49, 1)
   const DEFAULT_PRIZES = [
     { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 0,  color: '#b80f0a', text: '#ffd700' },
     { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 0,  color: '#fff3d1', text: '#6e0d05' },
@@ -390,7 +391,7 @@
     { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 49, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
 
-  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V8')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V9')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
@@ -404,7 +405,6 @@
   let totalTickets = 0;
   let historyList = [];
 
-  // Chạm liên tiếp 5 lần vào tiêu đề để ẩn/hiện bảng quản lý và đổi dòng trạng thái
   let secretTapCount = 0;
   let secretTapTimer = null;
   function secretAdminTrigger() {
@@ -416,17 +416,28 @@
       const panel = document.getElementById('editorPanel');
       bar.classList.toggle('secret-open');
       panel.classList.toggle('open');
-
-      const isOpen = panel.classList.contains('open');
-      if (isOpen) {
-        statusIndicator.textContent = '⚙️ Đang mở Bảng Quản Lý Tỷ Lệ (Chế độ ẩn)';
-        statusIndicator.classList.add('admin-active');
-      } else {
-        statusIndicator.textContent = '🟢 Đang chạy chế độ Mặc định (50, 49, 1)';
-        statusIndicator.classList.remove('admin-active');
-      }
+      updateStatusDisplay();
     } else {
       secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1200);
+    }
+  }
+
+  function updateStatusDisplay() {
+    const panel = document.getElementById('editorPanel');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) {
+      statusIndicator.textContent = '⚙️ Đang mở Bảng Quản Lý Tỷ Lệ (Chế độ ẩn)';
+      statusIndicator.className = 'status-indicator admin-active';
+    } else {
+      // Kiểm tra xem trọng số hiện tại có phải đang ở dạng mặc định không
+      const isDefault = PRIZES[3].weight === 50 && PRIZES[7].weight === 49 && PRIZES[6].weight === 1;
+      if (isDefault) {
+        statusIndicator.textContent = '🟢 Đang chạy chế độ Mặc định (50, 49, 1)';
+        statusIndicator.className = 'status-indicator';
+      } else {
+        statusIndicator.textContent = '🎲 Đang chạy chế độ Tỷ lệ Ngẫu nhiên';
+        statusIndicator.className = 'status-indicator random-mode';
+      }
     }
   }
 
@@ -712,9 +723,10 @@
       p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
-    localStorage.setItem('PHAT_DAT_WHEEL_V8', JSON.stringify(PRIZES));
+    localStorage.setItem('PHAT_DAT_WHEEL_V9', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
+    updateStatusDisplay();
     resultBanner.textContent = '✅ Đã lưu cố định danh sách giải thưởng!';
   }
 
@@ -724,20 +736,22 @@
     });
     populateControls();
     drawWheel();
+    updateStatusDisplay();
     resultBanner.textContent = '🎲 Đã trộn tỷ lệ ngẫu nhiên cho các ô!';
   }
 
   function resetDefaultPrizes() {
-    localStorage.removeItem('PHAT_DAT_WHEEL_V8');
+    localStorage.removeItem('PHAT_DAT_WHEEL_V9');
     PRIZES = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
     populateControls();
     drawWheel();
+    updateStatusDisplay();
     resultBanner.textContent = '🔄 Đã khôi phục tỷ lệ mặc định (50, 49, 1)!';
   }
 
   populateControls();
   drawWheel();
-  updateStatsUI();
+  updateStatusDisplay();
 </script>
 </body>
 </html>
