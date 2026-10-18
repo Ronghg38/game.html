@@ -33,12 +33,34 @@
       position: relative;
     }
 
+    /* Nút Bánh Răng Cài Đặt (Nằm góc trên bên phải) */
+    .admin-toggle-btn {
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 30;
+      transition: transform 0.2s;
+    }
+    .admin-toggle-btn:active { transform: scale(0.9); }
+
     .title-banner {
       text-align: center;
       padding: 4px 10px;
+      width: 100%;
+      position: relative;
     }
     .title-banner h1 {
-      font-size: 1.45rem;
+      font-size: 1.4rem;
       font-weight: 900;
       text-transform: uppercase;
       background: linear-gradient(180deg, #fff8c4 0%, #ffd700 50%, #ff8800 100%);
@@ -54,8 +76,9 @@
       letter-spacing: 0.5px;
     }
 
+    /* Bảng cấu hình (Mặc định ẩn hoàn toàn) */
     .control-bar {
-      display: flex;
+      display: none;
       width: 100%;
       background: rgba(15, 3, 3, 0.95);
       border: 1.5px solid var(--gold);
@@ -68,6 +91,7 @@
       font-size: 0.78rem;
       z-index: 20;
     }
+    .control-bar.open { display: flex; }
     .control-bar label { color: var(--gold); font-weight: bold; }
     .control-bar select {
       flex: 1;
@@ -79,19 +103,9 @@
       font-weight: bold;
       outline: none;
     }
-    .btn-edit {
-      background: linear-gradient(180deg, #ffd700, #cc8800);
-      color: #240800;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-weight: 800;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
 
     .editor-panel {
-      display: block;
+      display: none;
       width: 100%;
       background: rgba(22, 5, 5, 0.96);
       border: 1.5px solid var(--gold);
@@ -99,6 +113,7 @@
       padding: 10px;
       z-index: 20;
     }
+    .editor-panel.open { display: block; }
     .editor-row {
       display: grid;
       grid-template-columns: 1.8fr 0.8fr 0.8fr;
@@ -125,6 +140,16 @@
       display: flex;
       gap: 6px;
       margin-top: 6px;
+    }
+    .btn-edit {
+      background: linear-gradient(180deg, #ffd700, #cc8800);
+      color: #240800;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-weight: 800;
+      font-size: 0.75rem;
+      cursor: pointer;
     }
 
     .stats-bar {
@@ -292,20 +317,24 @@
 <body>
 
 <div class="app-container">
+  <!-- Nút bánh răng mở bảng cài đặt ẩn -->
+  <div class="admin-toggle-btn" onclick="toggleAdminPanel()" title="Cài đặt">⚙️</div>
+
   <div class="title-banner">
     <h1>🎡 Vòng Quay Vé Số Phát Đạt</h1>
     <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
   </div>
 
-  <div class="control-bar">
+  <!-- Thanh điều khiển ẩn -->
+  <div class="control-bar" id="adminControlBar">
     <label for="forceSelect">🎯 Chế độ ra giải:</label>
     <select id="forceSelect">
       <option value="-1">🎲 Ngẫu nhiên theo Tỷ lệ %</option>
     </select>
   </div>
 
-  <!-- Bảng chỉnh sửa tích hợp nút Lưu, Mặc định và nút Ngẫu nhiên mới -->
-  <div class="editor-panel">
+  <!-- Bảng sửa ô thưởng ẩn -->
+  <div class="editor-panel" id="adminEditorPanel">
     <div class="editor-row editor-header">
       <span>Tên ô thưởng</span>
       <span>Số vé cộng</span>
@@ -355,7 +384,7 @@
 </div>
 
 <script>
-  // Tỷ lệ mặc định ban đầu: May Mắn Lần Sau (50), Thêm 1 lượt (49), Tặng 1 Vé Số (1), các ô khác (0)
+  // TỶ LỆ MẶC ĐỊNH CHUẨN THEO YÊU CẦU: May Mắn Lần Sau (50), Thêm 1 lượt (49), Tặng 1 Vé Số (1), các ô khác (0)
   const DEFAULT_PRIZES = [
     { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 0,  color: '#b80f0a', text: '#ffd700' },
     { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 0,  color: '#fff3d1', text: '#6e0d05' },
@@ -367,7 +396,7 @@
     { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 49, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
 
-  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V4')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V6')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
@@ -379,6 +408,13 @@
   let isSpinning = false;
   let totalTickets = 0;
   let historyList = [];
+
+  function toggleAdminPanel() {
+    const bar = document.getElementById('adminControlBar');
+    const panel = document.getElementById('adminEditorPanel');
+    bar.classList.toggle('open');
+    panel.classList.toggle('open');
+  }
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playTickSound() {
@@ -662,16 +698,14 @@
       p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
-    localStorage.setItem('PHAT_DAT_WHEEL_V4', JSON.stringify(PRIZES));
+    localStorage.setItem('PHAT_DAT_WHEEL_V6', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
     resultBanner.textContent = '✅ Đã lưu cố định danh sách giải thưởng!';
   }
 
-  // Nút Ngẫu nhiên: Tự động trộn tỷ lệ các ô thành số ngẫu nhiên
   function randomizeWeights() {
     PRIZES.forEach((p, idx) => {
-      // Gán ngẫu nhiên trọng số từ 5 đến 30 cho mỗi ô
       p.weight = Math.floor(Math.random() * 26) + 5;
     });
     populateControls();
@@ -680,7 +714,7 @@
   }
 
   function resetDefaultPrizes() {
-    localStorage.removeItem('PHAT_DAT_WHEEL_V4');
+    localStorage.removeItem('PHAT_DAT_WHEEL_V6');
     PRIZES = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
     populateControls();
     drawWheel();
