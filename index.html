@@ -33,31 +33,10 @@
       position: relative;
     }
 
-    /* Nút Bánh Răng Cài Đặt (Nằm góc trên bên phải) */
-    .admin-toggle-btn {
-      position: absolute;
-      top: 2px;
-      right: 4px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--gold);
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.1rem;
-      cursor: pointer;
-      z-index: 30;
-      transition: transform 0.2s;
-    }
-    .admin-toggle-btn:active { transform: scale(0.9); }
-
     .title-banner {
       text-align: center;
       padding: 4px 10px;
       width: 100%;
-      position: relative;
     }
     .title-banner h1 {
       font-size: 1.4rem;
@@ -68,6 +47,7 @@
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
       letter-spacing: 0.8px;
+      cursor: pointer;
     }
     .title-banner .sub {
       font-size: 0.78rem;
@@ -76,7 +56,23 @@
       letter-spacing: 0.5px;
     }
 
-    /* Bảng cấu hình (Mặc định ẩn hoàn toàn) */
+    /* Dòng thông báo trạng thái nhận biết trực quan */
+    .status-indicator {
+      font-size: 0.72rem;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed rgba(255, 215, 0, 0.4);
+      border-radius: 12px;
+      padding: 3px 10px;
+      margin-top: 4px;
+      display: inline-block;
+      color: #00e676; /* Mặc định màu xanh lá báo đang dùng tỷ lệ mặc định */
+    }
+    .status-indicator.admin-active {
+      color: #ff9800; /* Đổi sang màu cam khi đang mở bảng quản lý */
+      border-color: #ff9800;
+    }
+
     .control-bar {
       display: none;
       width: 100%;
@@ -91,7 +87,7 @@
       font-size: 0.78rem;
       z-index: 20;
     }
-    .control-bar.open { display: flex; }
+    .control-bar.secret-open { display: flex; }
     .control-bar label { color: var(--gold); font-weight: bold; }
     .control-bar select {
       flex: 1;
@@ -317,24 +313,22 @@
 <body>
 
 <div class="app-container">
-  <!-- Nút bánh răng mở bảng cài đặt ẩn -->
-  <div class="admin-toggle-btn" onclick="toggleAdminPanel()" title="Cài đặt">⚙️</div>
-
   <div class="title-banner">
-    <h1>🎡 Vòng Quay Vé Số Phát Đạt</h1>
+    <!-- Chạm liên tiếp 5 lần vào tiêu đề để mở/ẩn bảng quản lý -->
+    <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
     <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
+    <!-- Dòng hiển thị trạng thái nhận biết -->
+    <div class="status-indicator" id="statusIndicator">🟢 Đang chạy chế độ Mặc định (50, 49, 1)</div>
   </div>
 
-  <!-- Thanh điều khiển ẩn -->
-  <div class="control-bar" id="adminControlBar">
+  <div class="control-bar" id="secretControlBar">
     <label for="forceSelect">🎯 Chế độ ra giải:</label>
     <select id="forceSelect">
       <option value="-1">🎲 Ngẫu nhiên theo Tỷ lệ %</option>
     </select>
   </div>
 
-  <!-- Bảng sửa ô thưởng ẩn -->
-  <div class="editor-panel" id="adminEditorPanel">
+  <div class="editor-panel" id="editorPanel">
     <div class="editor-row editor-header">
       <span>Tên ô thưởng</span>
       <span>Số vé cộng</span>
@@ -384,7 +378,7 @@
 </div>
 
 <script>
-  // TỶ LỆ MẶC ĐỊNH CHUẨN THEO YÊU CẦU: May Mắn Lần Sau (50), Thêm 1 lượt (49), Tặng 1 Vé Số (1), các ô khác (0)
+  // TỶ LỆ MẶC ĐỊNH CHỦ ĐẠO (50, 49, 1)
   const DEFAULT_PRIZES = [
     { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 0,  color: '#b80f0a', text: '#ffd700' },
     { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 0,  color: '#fff3d1', text: '#6e0d05' },
@@ -396,24 +390,44 @@
     { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 49, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
 
-  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V6')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V8')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
   const pointerEl = document.getElementById('pointerEl');
   const spinBtn = document.getElementById('spinBtn');
   const resultBanner = document.getElementById('resultBanner');
+  const statusIndicator = document.getElementById('statusIndicator');
 
   let currentAngle = 0;
   let isSpinning = false;
   let totalTickets = 0;
   let historyList = [];
 
-  function toggleAdminPanel() {
-    const bar = document.getElementById('adminControlBar');
-    const panel = document.getElementById('adminEditorPanel');
-    bar.classList.toggle('open');
-    panel.classList.toggle('open');
+  // Chạm liên tiếp 5 lần vào tiêu đề để ẩn/hiện bảng quản lý và đổi dòng trạng thái
+  let secretTapCount = 0;
+  let secretTapTimer = null;
+  function secretAdminTrigger() {
+    secretTapCount++;
+    clearTimeout(secretTapTimer);
+    if (secretTapCount >= 5) {
+      secretTapCount = 0;
+      const bar = document.getElementById('secretControlBar');
+      const panel = document.getElementById('editorPanel');
+      bar.classList.toggle('secret-open');
+      panel.classList.toggle('open');
+
+      const isOpen = panel.classList.contains('open');
+      if (isOpen) {
+        statusIndicator.textContent = '⚙️ Đang mở Bảng Quản Lý Tỷ Lệ (Chế độ ẩn)';
+        statusIndicator.classList.add('admin-active');
+      } else {
+        statusIndicator.textContent = '🟢 Đang chạy chế độ Mặc định (50, 49, 1)';
+        statusIndicator.classList.remove('admin-active');
+      }
+    } else {
+      secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1200);
+    }
   }
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -698,7 +712,7 @@
       p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
-    localStorage.setItem('PHAT_DAT_WHEEL_V6', JSON.stringify(PRIZES));
+    localStorage.setItem('PHAT_DAT_WHEEL_V8', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
     resultBanner.textContent = '✅ Đã lưu cố định danh sách giải thưởng!';
@@ -714,7 +728,7 @@
   }
 
   function resetDefaultPrizes() {
-    localStorage.removeItem('PHAT_DAT_WHEEL_V6');
+    localStorage.removeItem('PHAT_DAT_WHEEL_V8');
     PRIZES = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
     populateControls();
     drawWheel();
