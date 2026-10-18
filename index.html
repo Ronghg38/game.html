@@ -7,20 +7,19 @@
   <style>
     :root {
       --gold: #ffd700;
-      --gold-dark: #b8860b;
-      --red-deep: #4a0404;
-      --bg-dark: #140505;
+      --gold-light: #fff3a8;
+      --gold-dark: #b87300;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     body {
-      background: radial-gradient(circle at center, #5e0b0b 0%, #1a0303 70%, #090101 100%);
+      background: radial-gradient(circle at top, #6b0f0f 0%, #240404 65%, #0d0101 100%);
       color: #fff;
-      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 12px 10px;
+      padding: 12px 10px 20px;
       overflow-x: hidden;
     }
 
@@ -31,14 +30,38 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
+      position: relative;
     }
 
-    /* Thanh Điều Khiển Kết Quả (ĐÃ ẨN MẶC ĐỊNH - Chạm 5 lần vào tiêu đề để mở) */
+    /* Tiêu đề chính (Chạm 5 lần liên tiếp để mở bảng cài đặt ẩn) */
+    .title-banner {
+      text-align: center;
+      padding: 4px 10px;
+    }
+    .title-banner h1 {
+      font-size: 1.45rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #fff8c4 0%, #ffd700 50%, #ff8800 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
+      letter-spacing: 0.8px;
+      cursor: pointer;
+    }
+    .title-banner .sub {
+      font-size: 0.78rem;
+      color: #ffcf70;
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Thanh Điều Khiển Ẩn (Chạm 5 lần vào tiêu đề mới hiện) */
     .control-bar {
       display: none;
       width: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      border: 1px solid var(--gold);
+      background: rgba(15, 3, 3, 0.95);
+      border: 1.5px solid var(--gold);
       border-radius: 10px;
       padding: 8px 10px;
       flex-wrap: wrap;
@@ -46,14 +69,10 @@
       align-items: center;
       gap: 6px;
       font-size: 0.78rem;
+      z-index: 20;
     }
-    .control-bar.secret-open {
-      display: flex;
-    }
-    .control-bar label {
-      color: var(--gold);
-      font-weight: bold;
-    }
+    .control-bar.secret-open { display: flex; }
+    .control-bar label { color: var(--gold); font-weight: bold; }
     .control-bar select {
       flex: 1;
       background: #2b0909;
@@ -69,69 +88,107 @@
       color: #240800;
       border: none;
       border-radius: 6px;
-      padding: 5px 10px;
+      padding: 6px 10px;
       font-weight: 800;
       font-size: 0.75rem;
       cursor: pointer;
     }
 
-    /* Tiêu đề Vòng Quay Vé Số Phát Đạt */
-    .title-banner {
-      text-align: center;
-      margin-top: 4px;
+    /* Bảng Sửa Ô Thưởng (Lưu vào bộ nhớ trình duyệt) */
+    .editor-panel {
+      display: none;
+      width: 100%;
+      background: rgba(22, 5, 5, 0.96);
+      border: 1.5px solid var(--gold);
+      border-radius: 12px;
+      padding: 10px;
+      z-index: 20;
     }
-    .title-banner h1 {
-      font-size: 1.4rem;
-      text-transform: uppercase;
+    .editor-panel.open { display: block; }
+    .editor-row {
+      display: grid;
+      grid-template-columns: 1.8fr 0.8fr 0.8fr;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+    .editor-row input {
+      width: 100%;
+      background: #2e0c0c;
+      color: #fff;
+      border: 1px solid #8c5818;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+    }
+    .editor-header {
+      font-size: 0.72rem;
       color: var(--gold);
-      text-shadow: 0 2px 8px #ff4500, 0 0 15px #000;
-      letter-spacing: 0.8px;
-      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .editor-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
     }
 
-    /* Hộp hiển thị Tổng Tiền Thưởng (Đã bỏ 10 lượt quay) */
+    /* Hộp thống kê Lộc Vé Số */
     .stats-bar {
       width: 100%;
-      display: flex;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
     .stat-card {
-      width: 100%;
-      background: linear-gradient(180deg, #380909, #1c0404);
-      border: 1.5px solid #a8741a;
+      background: linear-gradient(180deg, #3d0a0a 0%, #1a0303 100%);
+      border: 1.5px solid #b57c1e;
       border-radius: 12px;
-      padding: 8px 14px;
+      padding: 8px 10px;
       text-align: center;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 3px 8px rgba(0,0,0,0.4);
     }
-    .stat-card .lbl { font-size: 0.72rem; color: #e0b872; font-weight: bold; letter-spacing: 0.5px; }
-    .stat-card .val { font-size: 1.2rem; font-weight: 900; color: var(--gold); margin-top: 2px; }
+    .stat-card .lbl {
+      font-size: 0.68rem;
+      color: #e6c17a;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .stat-card .val {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-top: 2px;
+      text-shadow: 0 1px 4px #000;
+    }
 
-    /* Khung Vòng Quay */
+    /* Khu vực Vòng Quay */
     .wheel-stage {
       position: relative;
-      width: 340px;
-      height: 340px;
+      width: 356px;
+      height: 356px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 6px 0;
+      margin: 4px 0;
     }
+    /* Vành vàng 3D + Đèn LED xung quanh */
     .outer-rim {
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: conic-gradient(#ffd700, #995c00, #ffd700, #995c00, #ffd700);
-      padding: 12px;
-      box-shadow: 0 0 30px rgba(255, 180, 0, 0.5), inset 0 0 15px #000;
+      background: radial-gradient(circle, #5c2c06 60%, #ffd700 68%, #995c00 72%, #3d1b02 100%);
+      padding: 16px;
+      box-shadow: 0 0 35px rgba(255, 185, 0, 0.55), inset 0 0 15px #000;
     }
     .wheel-canvas-wrap {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       overflow: hidden;
-      background: #111;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
+      border: 3px solid #ffe680;
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.9);
+      position: relative;
     }
     canvas#wheelCanvas {
       width: 100%;
@@ -142,132 +199,120 @@
     /* Kim chỉ vị trí 12 giờ */
     .pointer {
       position: absolute;
-      top: -14px;
+      top: -12px;
       left: 50%;
       transform: translateX(-50%);
-      width: 36px;
-      height: 46px;
-      z-index: 10;
-      filter: drop-shadow(0 4px 4px rgba(0,0,0,0.8));
-      transform-origin: 50% 10px;
+      width: 40px;
+      height: 50px;
+      z-index: 12;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,0.85));
+      transform-origin: 50% 12px;
       transition: transform 0.06s ease-out;
     }
     .pointer.flick {
       transform: translateX(-50%) rotate(-24deg);
     }
 
-    /* Nút QUAY ở tâm vòng quay */
+    /* Nút QUAY ở tâm (Thiết kế gọn gàng không che chữ) */
     .center-spin-btn {
       position: absolute;
-      width: 78px;
-      height: 78px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      background: radial-gradient(circle, #fff3a1 0%, #ffb700 45%, #b35900 100%);
-      border: 4px solid #fff;
-      box-shadow: 0 0 20px rgba(0,0,0,0.9), inset 0 2px 6px #fff;
-      color: #4a0c00;
+      background: radial-gradient(circle at 35% 30%, #fff8bd 0%, #ffc400 45%, #b35900 90%, #5e2800 100%);
+      border: 3.5px solid #fff;
+      box-shadow: 0 0 0 3px #b87300, 0 6px 18px rgba(0,0,0,0.95), inset 0 2px 5px #fff;
+      color: #3d0800;
       font-weight: 900;
-      font-size: 1.05rem;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      z-index: 8;
+      z-index: 10;
       display: flex;
       justify-content: center;
       align-items: center;
-      text-shadow: 0 1px 1px rgba(255,255,255,0.7);
-      transition: transform 0.15s ease;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+      transition: transform 0.15s ease, filter 0.2s;
     }
     .center-spin-btn:active { transform: scale(0.92); }
     .center-spin-btn:disabled {
-      filter: grayscale(0.6);
+      filter: grayscale(0.55) brightness(0.85);
       cursor: not-allowed;
     }
 
     /* Hộp Thông Báo Trúng Giải */
     .result-banner {
       width: 100%;
-      min-height: 44px;
-      background: linear-gradient(90deg, #330606, #7a1111, #330606);
+      min-height: 46px;
+      background: linear-gradient(90deg, #2e0505, #6e0e0e, #2e0505);
       border: 2px solid var(--gold);
       border-radius: 25px;
-      padding: 8px 14px;
+      padding: 8px 16px;
       text-align: center;
       font-weight: 800;
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       color: #fff2b2;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.65);
+      transition: all 0.3s ease;
     }
     .result-banner.winner {
-      background: linear-gradient(90deg, #8f4b00, #ffae00, #8f4b00);
-      color: #1f0500;
+      background: linear-gradient(90deg, #994d00, #ffd000, #994d00);
+      color: #240400;
       font-size: 1.05rem;
-      box-shadow: 0 0 20px #ffd700;
+      box-shadow: 0 0 22px #ffd700;
+      transform: scale(1.02);
     }
 
-    /* Bảng Tùy Chỉnh Ô Thưởng & Tỷ Lệ (Ẩn) */
-    .editor-panel {
-      display: none;
-      width: 100%;
-      background: rgba(18, 4, 4, 0.95);
-      border: 1.5px solid var(--gold);
-      border-radius: 12px;
-      padding: 10px;
-    }
-    .editor-panel.open { display: block; }
-    .editor-row {
-      display: grid;
-      grid-template-columns: 1.6fr 1fr 0.8fr;
-      gap: 6px;
-      margin-bottom: 6px;
-      align-items: center;
-    }
-    .editor-row input {
-      width: 100%;
-      background: #2e0c0c;
-      color: #fff;
-      border: 1px solid #7a4e12;
-      border-radius: 5px;
-      padding: 5px 6px;
-      font-size: 0.78rem;
-    }
-    .editor-header {
-      font-size: 0.72rem;
-      color: var(--gold);
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    /* Lịch sử quay */
+    /* Lịch sử trúng thưởng */
     .history-box {
       width: 100%;
       background: rgba(0, 0, 0, 0.45);
-      border: 1px solid #5c2810;
+      border: 1px solid #633212;
       border-radius: 10px;
       padding: 8px 12px;
       max-height: 115px;
       overflow-y: auto;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
     }
     .history-item {
       display: flex;
       justify-content: space-between;
-      padding: 3px 0;
+      padding: 4px 0;
       border-bottom: 1px dashed rgba(255,255,255,0.12);
-      color: #ffd999;
+      color: #ffe0a3;
+    }
+
+    /* Hiệu ứng pháo giấy kim tuyến */
+    .confetti {
+      position: fixed;
+      width: 9px;
+      height: 14px;
+      top: -20px;
+      z-index: 99;
+      pointer-events: none;
+      animation: fallDown 2.6s linear forwards;
+    }
+    @keyframes fallDown {
+      to {
+        transform: translateY(105vh) rotate(720deg);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
 
 <div class="app-container">
-  <!-- Tiêu đề (Chạm 5 lần liên tiếp vào tiêu đề nếu chủ web muốn bật bảng chỉnh ngầm) -->
+  <!-- Tiêu đề (Chạm 5 lần liên tiếp vào tiêu đề nếu chủ web muốn mở bảng cài đặt ẩn) -->
   <div class="title-banner">
     <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
+    <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
   </div>
 
-  <!-- Thanh Chỉnh Tỷ Lệ / Ép Kết Quả (Đã ẩn mặc định) -->
+  <!-- Thanh Chỉnh Tỷ Lệ / Ép Kết Quả (Ẩn mặc định) -->
   <div class="control-bar" id="secretControlBar">
     <label for="forceSelect">🎯 Chế độ ra giải:</label>
     <select id="forceSelect">
@@ -276,22 +321,29 @@
     <button class="btn-edit" onclick="toggleEditor()">⚙️ Sửa ô</button>
   </div>
 
-  <!-- Bảng Sửa Tên Giải & Tỷ Lệ % (Đã ẩn mặc định) -->
+  <!-- Bảng Sửa Tên Giải & Tỷ Lệ % (Ẩn mặc định) -->
   <div class="editor-panel" id="editorPanel">
     <div class="editor-row editor-header">
       <span>Tên ô thưởng</span>
-      <span>Tiền cộng (đ)</span>
+      <span>Số vé cộng</span>
       <span>Tỷ lệ trọng số</span>
     </div>
     <div id="editorRows"></div>
-    <button class="btn-edit" style="width:100%; margin-top:4px; padding:7px;" onclick="saveEditor()">💾 LƯU CẬP NHẬT VÒNG QUAY</button>
+    <div class="editor-actions">
+      <button class="btn-edit" style="flex:1; padding:8px;" onclick="saveEditor()">💾 LƯU CẬP NHẬT VÒNG QUAY</button>
+      <button class="btn-edit" style="background:#555; color:#fff; padding:8px;" onclick="resetDefaultPrizes()">🔄 Mặc định</button>
+    </div>
   </div>
 
-  <!-- Thống kê Tổng Tiền Thưởng -->
+  <!-- Thống kê Tổng Vé Số & Giải Vừa Trúng -->
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="lbl">TỔNG TIỀN THƯỞNG NHẬN ĐƯỢC</div>
-      <div class="val" id="totalMoneyEl">0 đ</div>
+      <div class="lbl">🎫 Tổng Vé Số Nhận Được</div>
+      <div class="val" id="totalTicketsEl">0 Vé</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">🎁 Phần Thưởng Vừa Trúng</div>
+      <div class="val" id="lastPrizeEl" style="font-size:0.95rem; color:#fff;">Chưa quay</div>
     </div>
   </div>
 
@@ -299,13 +351,13 @@
   <div class="wheel-stage">
     <!-- Kim chỉ 12h -->
     <svg class="pointer" id="pointerEl" viewBox="0 0 40 52">
-      <polygon points="20,50 4,14 36,14" fill="#ff2a00" stroke="#ffd700" stroke-width="3"/>
-      <circle cx="20" cy="14" r="9" fill="#ffd700" stroke="#fff" stroke-width="2"/>
+      <polygon points="20,50 4,14 36,14" fill="#ff1e00" stroke="#ffd700" stroke-width="3"/>
+      <circle cx="20" cy="14" r="9" fill="#ffd700" stroke="#fff" stroke-width="2.5"/>
     </svg>
 
     <div class="outer-rim">
       <div class="wheel-canvas-wrap">
-        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        <canvas id="wheelCanvas" width="540" height="540"></canvas>
       </div>
     </div>
 
@@ -324,17 +376,20 @@
 </div>
 
 <script>
-  // Danh sách 8 ô phần thưởng chuẩn chủ đề Vé Số Phát Đạt
-  let PRIZES = [
-    { label: '🎁 ĐẶC BIỆT 5TR', value: 5000000, weight: 2,  color: '#b80f0a', text: '#ffd700' },
-    { label: '💵 100.000đ',      value: 100000,  weight: 18, color: '#fff3d1', text: '#5c0c06' },
-    { label: '💎 LỘC PHÁT 1TR',  value: 1000000, weight: 5,  color: '#d46b08', text: '#ffffff' },
-    { label: '🍀 May Mắn Lần Sau',value: 0,      weight: 25, color: '#2b1204', text: '#cfa670' },
-    { label: '💰 500.000đ',      value: 500000,  weight: 10, color: '#8f0b0b', text: '#ffd700' },
-    { label: '🎫 Tặng 2 Vé Số',  value: 20000,   weight: 15, color: '#fff3d1', text: '#5c0c06' },
-    { label: '💸 200.000đ',      value: 200000,  weight: 12, color: '#b55400', text: '#ffffff' },
-    { label: '🪙 50.000đ',       value: 50000,   weight: 13, color: '#3b0909', text: '#ffd700' }
+  // DANH SÁCH 8 Ô THƯỞNG CỐ ĐỊNH CHUẨN NHƯ HÌNH CỦA BẠN
+  const DEFAULT_PRIZES = [
+    { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 2,  color: '#b80f0a', text: '#ffd700' },
+    { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 18, color: '#fff3d1', text: '#6e0d05' },
+    { label: '💎 Trúng 4 Vé Số',     tickets: 4, weight: 5,  color: '#d46b08', text: '#ffffff' },
+    { label: '🍀 May Mắn Lần Sau',   tickets: 0, weight: 25, color: '#2b1204', text: '#f0c27b' },
+    { label: '💰 Trúng 5 vé số',     tickets: 5, weight: 10, color: '#8f0b0b', text: '#ffd700' },
+    { label: '🎫 Tặng 2 Vé Số',      tickets: 2, weight: 15, color: '#fff3d1', text: '#6e0d05' },
+    { label: '💸 Tặng 1 Vé Số',      tickets: 1, weight: 12, color: '#b55400', text: '#ffffff' },
+    { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 13, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
+
+  // Đọc từ bộ nhớ trình duyệt (nếu bạn có chỉnh sửa và bấm Lưu), nếu chưa thì lấy chuẩn 8 ô trên
+  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V2')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
@@ -344,10 +399,10 @@
 
   let currentAngle = 0;
   let isSpinning = false;
-  let totalMoney = 0;
+  let totalTickets = 0;
   let historyList = [];
 
-  // Cơ chế mở khóa ẩn cho chủ web (Chạm 5 lần liên tiếp vào tiêu đề)
+  // Mở khóa bảng chỉnh ngầm khi chạm 5 lần vào tiêu đề
   let secretTapCount = 0;
   let secretTapTimer = null;
   function secretAdminTrigger() {
@@ -373,14 +428,14 @@
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(680, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.045);
-      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.045);
+      osc.frequency.setValueAtTime(720, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(190, audioCtx.currentTime + 0.04);
+      gain.gain.setValueAtTime(0.16, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.045);
+      osc.stop(audioCtx.currentTime + 0.04);
     } catch (e) {}
   }
 
@@ -403,47 +458,102 @@
     } catch (e) {}
   }
 
-  // Vẽ bàn xoay
+  // Tách riêng Icon ở đầu và chia chữ thành 2 dòng cân đối để KHÔNG BAO GIỜ bị nút QUAY che
+  function parsePrizeText(rawLabel) {
+    const trimmed = (rawLabel || '').trim();
+    const parts = trimmed.split(/\s+/);
+    let icon = '';
+    let words = parts;
+
+    // Kiểm tra từ đầu tiên có phải là Emoji/Icon không
+    if (parts.length > 1 && /[^\w\sÀ-ỹ]/u.test(parts[0])) {
+      icon = parts[0];
+      words = parts.slice(1);
+    }
+
+    if (words.length <= 2) {
+      return { icon, line1: words.join(' '), line2: '' };
+    }
+    const mid = Math.ceil(words.length / 2);
+    return {
+      icon,
+      line1: words.slice(0, mid).join(' '),
+      line2: words.slice(mid).join(' ')
+    };
+  }
+
+  // Vẽ bàn xoay sắc nét, chống tràn chữ
   function drawWheel() {
     const N = PRIZES.length;
     const arc = (2 * Math.PI) / N;
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
-    const radius = cx - 8;
+    const radius = cx - 6;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let i = 0; i < N; i++) {
       const start = currentAngle + i * arc;
       const end = start + arc;
+      const midAngle = start + arc / 2;
 
+      // 1. Vẽ múi quạt
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, radius, start, end);
       ctx.closePath();
       ctx.fillStyle = PRIZES[i].color;
       ctx.fill();
-      ctx.lineWidth = 3;
+
+      // Viền vàng phân cách múi
+      ctx.lineWidth = 3.5;
       ctx.strokeStyle = '#ffd700';
       ctx.stroke();
 
+      // 2. Vẽ Icon và Chữ (Nằm gọn trong vùng an toàn từ r=86 đến r=230, không chạm nút QUAY)
+      const { icon, line1, line2 } = parsePrizeText(PRIZES[i].label);
+
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.rotate(start + arc / 2);
-      ctx.textAlign = 'right';
+      ctx.rotate(midAngle);
+
+      // Vẽ Icon lớn ở sát mép ngoài rộng rãi (r = 216)
+      if (icon) {
+        ctx.font = '28px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, 214, 0);
+      }
+
+      // Vẽ Chữ nằm ở khoảng giữa múi (r = 138), có viền mảnh giúp nổi bật tuyệt đối
+      const textCenterR = icon ? 136 : 154;
+      const maxTextWidth = 112; // Giới hạn chiều dài để cách xa nút QUAY ở tâm
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 20px "Segoe UI", Roboto, sans-serif';
+
+      // Đổ bóng chữ giúp đọc cực rõ trên cả nền sáng và tối
+      ctx.shadowColor = PRIZES[i].color === '#fff3d1' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.85)';
+      ctx.shadowBlur = 4;
       ctx.fillStyle = PRIZES[i].text;
-      ctx.font = 'bold 21px "Segoe UI", sans-serif';
-      ctx.fillText(PRIZES[i].label, radius - 26, 7);
+
+      if (line2) {
+        ctx.fillText(line1, textCenterR, -11, maxTextWidth);
+        ctx.fillText(line2, textCenterR, 12, maxTextWidth);
+      } else {
+        ctx.fillText(line1, textCenterR, 0, maxTextWidth);
+      }
       ctx.restore();
 
-      const pegX = cx + Math.cos(start) * (radius - 6);
-      const pegY = cy + Math.sin(start) * (radius - 6);
+      // 3. Vẽ chốt đinh tán vàng ở rìa mỗi múi
+      const pegX = cx + Math.cos(start) * (radius - 7);
+      const pegY = cy + Math.sin(start) * (radius - 7);
       ctx.beginPath();
-      ctx.arc(pegX, pegY, 6, 0, 2 * Math.PI);
-      ctx.fillStyle = '#ffffff';
+      ctx.arc(pegX, pegY, 6.5, 0, 2 * Math.PI);
+      ctx.fillStyle = '#fff9d6';
       ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#b8860b';
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#995c00';
       ctx.stroke();
     }
   }
@@ -480,7 +590,7 @@
     const arc = (2 * Math.PI) / N;
     const winIdx = pickWinnerIndex();
 
-    const randomInSector = (Math.random() - 0.5) * 0.55;
+    const randomInSector = (Math.random() - 0.5) * 0.52;
     const pointerAngle = -Math.PI / 2;
     let targetMod = (pointerAngle - (winIdx + 0.5 + randomInSector) * arc) % (2 * Math.PI);
     if (targetMod < 0) targetMod += 2 * Math.PI;
@@ -525,19 +635,40 @@
     requestAnimationFrame(animateFrame);
   }
 
+  function spawnConfetti() {
+    const colors = ['#ffd700', '#ff3b30', '#00e676', '#fff', '#ff9500'];
+    for (let i = 0; i < 28; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.animationDuration = (1.8 + Math.random() * 1.2) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+  }
+
   function finishSpin(winIdx) {
     const prize = PRIZES[winIdx];
-    if (prize.value > 0) {
-      totalMoney += prize.value;
-      playWinFanfare(prize.value >= 500000);
+    const cleanName = prize.label;
+    document.getElementById('lastPrizeEl').textContent = cleanName;
+
+    if (prize.tickets > 0) {
+      totalTickets += prize.tickets;
+      playWinFanfare(prize.tickets >= 3);
+      spawnConfetti();
       resultBanner.classList.add('winner');
-      resultBanner.textContent = `🎉 CHÚC MỪNG! BẠN TRÚNG: ${prize.label}`;
+      resultBanner.textContent = `🎉 CHÚC MỪNG! BẠN NHẬN ĐƯỢC: ${cleanName}`;
+    } else if (prize.isExtraSpin || cleanName.toLowerCase().includes('thêm')) {
+      playWinFanfare(false);
+      resultBanner.classList.add('winner');
+      resultBanner.textContent = `🎁 TUYỆT VỜI! ${cleanName.toUpperCase()} — QUAY TIẾP NGAY!`;
     } else {
-      resultBanner.textContent = `🍀 Kết quả: ${prize.label} — Quay tiếp nhé!`;
+      resultBanner.textContent = `🍀 Kết quả: ${cleanName} — Chúc bạn may mắn ở lượt kế tiếp!`;
     }
 
     const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    historyList.unshift({ time: timeStr, label: prize.label });
+    historyList.unshift({ time: timeStr, label: cleanName });
     renderHistory();
     updateStatsUI();
 
@@ -546,7 +677,7 @@
   }
 
   function updateStatsUI() {
-    document.getElementById('totalMoneyEl').textContent = totalMoney.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('totalTicketsEl').textContent = totalTickets + ' Vé';
   }
 
   function renderHistory() {
@@ -570,7 +701,7 @@
     rowsEl.innerHTML = PRIZES.map((p, idx) => `
       <div class="editor-row">
         <input type="text" id="lbl_${idx}" value="${p.label}">
-        <input type="number" id="val_${idx}" value="${p.value}">
+        <input type="number" id="tkt_${idx}" value="${p.tickets}">
         <input type="number" id="wei_${idx}" value="${p.weight}">
       </div>
     `).join('');
@@ -583,13 +714,24 @@
   function saveEditor() {
     PRIZES.forEach((p, idx) => {
       p.label = document.getElementById(`lbl_${idx}`).value || p.label;
-      p.value = parseInt(document.getElementById(`val_${idx}`).value, 10) || 0;
+      p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
+    // Lưu vĩnh viễn vào bộ nhớ trình duyệt để tải lại trang không bị mất
+    localStorage.setItem('PHAT_DAT_WHEEL_V2', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
     document.getElementById('editorPanel').classList.remove('open');
-    resultBanner.textContent = '✅ Đã lưu danh sách giải thưởng & tỷ lệ!';
+    resultBanner.textContent = '✅ Đã lưu cố định danh sách giải thưởng!';
+  }
+
+  function resetDefaultPrizes() {
+    localStorage.removeItem('PHAT_DAT_WHEEL_V2');
+    PRIZES = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+    populateControls();
+    drawWheel();
+    document.getElementById('editorPanel').classList.remove('open');
+    resultBanner.textContent = '🔄 Đã khôi phục 8 ô giải thưởng mặc định!';
   }
 
   populateControls();
