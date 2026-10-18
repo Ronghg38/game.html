@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Wild Bounty Showdown - Quyết Chiến Giành Tiền Thưởng</title>
+  <title>Cao Bồi Săn Thưởng - Simulator</title>
   <style>
     :root {
       --gold: #ffcf40;
-      --gold-dark: #b87300;
-      --wood-light: #7c471e;
       --wood-mid: #4e290d;
-      --wood-dark: #261204;
       --felt-green: #143627;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -37,9 +34,9 @@
       overflow: hidden;
     }
 
-    /* Thanh công cụ chỉnh Tỷ Lệ Nổ Scatter */
+    /* Thanh chỉnh Tỷ Lệ Scatter & Tốc Độ */
     .admin-bar {
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.88);
       border-bottom: 1px solid var(--gold);
       padding: 6px 10px;
       display: flex;
@@ -68,7 +65,7 @@
       box-shadow: 0 0 8px #00e676;
     }
 
-    /* Vòm Hệ Số Nhân trên cùng (x1 -> x1024) */
+    /* Vòm Hệ Số Nhân (x1 -> x1024) */
     .top-arch {
       margin: 6px 12px 2px;
       background: linear-gradient(180deg, #592e12, #2b1405);
@@ -79,13 +76,12 @@
       justify-content: space-around;
       align-items: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.6), inset 0 2px 6px rgba(255,200,100,0.3);
-      position: relative;
     }
     .mult-item {
       font-size: 0.9rem;
       font-weight: 900;
       color: #9e7348;
-      transition: all 0.25s ease;
+      transition: all 0.35s ease;
       padding: 2px 6px;
       border-radius: 6px;
     }
@@ -93,10 +89,10 @@
       font-size: 1.35rem;
       color: #fff3b0;
       text-shadow: 0 0 10px #ff8800, 0 2px 2px #000;
-      transform: scale(1.15);
+      transform: scale(1.18);
     }
 
-    /* Khung Bàn Cờ 3600 ĐƯỜNG */
+    /* Khung Bàn Cờ */
     .board-frame {
       margin: 2px 8px;
       background: linear-gradient(180deg, #42210b 0%, #241004 100%);
@@ -123,9 +119,8 @@
       color: #fff;
       font-weight: 900;
       font-size: 0.85rem;
-      padding: 3px 0;
+      padding: 4px 0;
       margin-bottom: 4px;
-      text-shadow: 0 1px 3px #000;
     }
 
     /* Lưới 6 Cột 3-4-5-5-4-3 */
@@ -139,13 +134,31 @@
       border-radius: 10px;
       padding: 6px 4px;
       min-height: 280px;
+      overflow: hidden;
     }
     .reel-col {
       display: flex;
       flex-direction: column;
       gap: 4px;
       justify-content: center;
+      border-radius: 6px;
+      transition: box-shadow 0.3s ease;
     }
+    /* Hiệu ứng cột đang quay từ từ */
+    .reel-col.spinning-col .symbol-cell {
+      animation: reelRoll 0.16s linear infinite;
+      filter: blur(1.5px) brightness(0.85);
+    }
+    /* Hiệu ứng cột phát sáng hồi hộp khi chờ Scatter thứ 3 */
+    .reel-col.tease-col {
+      box-shadow: 0 0 15px #ffe600, inset 0 0 10px #ff9900;
+    }
+    @keyframes reelRoll {
+      0% { transform: translateY(-18px); }
+      50% { transform: translateY(18px); }
+      100% { transform: translateY(-18px); }
+    }
+
     .symbol-cell {
       aspect-ratio: 1 / 1.05;
       background: linear-gradient(180deg, #2d1607 0%, #1a0b03 100%);
@@ -156,7 +169,7 @@
       justify-content: center;
       align-items: center;
       position: relative;
-      transition: transform 0.18s ease;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
     .symbol-cell .icon {
       font-size: 1.45rem;
@@ -164,15 +177,14 @@
       filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
     }
     .symbol-cell .tag {
-      font-size: 0.52rem;
+      font-size: 0.5rem;
       font-weight: 900;
       padding: 1px 4px;
       border-radius: 3px;
       margin-top: 2px;
-      letter-spacing: 0.3px;
     }
 
-    /* Các loại ô đặc biệt: Khung Vàng, WILD, SCATTER */
+    /* Các loại ô đặc biệt */
     .symbol-cell.gold-frame {
       border: 2.5px solid #ffd700;
       background: radial-gradient(circle, #694b08 0%, #2b1d02 100%);
@@ -185,43 +197,53 @@
     .symbol-cell.wild {
       border: 2px solid #ff3d00;
       background: radial-gradient(circle, #7a1c00 0%, #2b0700 100%);
-      box-shadow: 0 0 10px rgba(255, 61, 0, 0.8);
+      box-shadow: 0 0 12px rgba(255, 61, 0, 0.9);
+      animation: wildPop 0.4s ease-out;
     }
     .symbol-cell.wild .tag {
       background: linear-gradient(90deg, #ffdf00, #ff4500);
       color: #000;
     }
+    @keyframes wildPop {
+      0% { transform: scale(0.4); opacity: 0.2; }
+      70% { transform: scale(1.18); }
+      100% { transform: scale(1); opacity: 1; }
+    }
     .symbol-cell.scatter {
       border: 2px solid #ffe600;
       background: radial-gradient(circle, #8f6800 0%, #2e1f00 100%);
-      box-shadow: 0 0 12px rgba(255, 230, 0, 0.85);
+      box-shadow: 0 0 12px rgba(255, 230, 0, 0.9);
     }
     .symbol-cell.scatter .tag {
       background: linear-gradient(90deg, #fff380, #ffae00);
       color: #361900;
     }
 
-    /* Hiệu ứng nổ dây chuyền */
+    /* Hiệu ứng ăn điểm & nổ chậm rãi */
     .symbol-cell.winning {
-      animation: bulletHit 0.42s ease-in-out forwards;
+      animation: slowWinPulse 0.85s ease-in-out forwards;
       border-color: #fff;
-      box-shadow: 0 0 18px #ffd700;
+      box-shadow: 0 0 20px #ffd700;
       z-index: 4;
     }
-    @keyframes bulletHit {
+    @keyframes slowWinPulse {
       0% { transform: scale(1); }
-      45% { transform: scale(1.22); background: #ffb700; }
-      100% { transform: scale(0.1); opacity: 0; }
-    }
-    .symbol-cell.drop-in {
-      animation: dropDown 0.22s ease-out;
-    }
-    @keyframes dropDown {
-      from { transform: translateY(-25px); opacity: 0.3; }
-      to { transform: translateY(0); opacity: 1; }
+      30% { transform: scale(1.18); background: #ffae00; }
+      65% { transform: scale(1.12); background: #ff7700; opacity: 1; }
+      100% { transform: scale(0.15); opacity: 0; }
     }
 
-    /* Nút TÍNH NĂNG MUA giống trong video */
+    /* Hiệu ứng rơi từ trên xuống từ từ */
+    .symbol-cell.drop-in {
+      animation: smoothDrop 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes smoothDrop {
+      0% { transform: translateY(-45px); opacity: 0; }
+      70% { transform: translateY(4px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Nút Mua Tính Năng */
     .buy-feature-btn {
       position: absolute;
       right: -2px;
@@ -240,9 +262,8 @@
       z-index: 5;
       line-height: 1.15;
     }
-    .buy-feature-btn:active { transform: scale(0.95); }
 
-    /* Thanh Thông Báo Giữa (Thắng tới 3600 đường / Tổng Thắng) */
+    /* Thanh Thông Báo Giữa */
     .marquee-box {
       margin: 4px 18px;
       background: linear-gradient(180deg, #3a1c08 0%, #1f0d02 100%);
@@ -254,7 +275,7 @@
       font-weight: 800;
       color: #ffe299;
       box-shadow: 0 3px 8px rgba(0,0,0,0.6);
-      min-height: 34px;
+      min-height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -267,7 +288,7 @@
       text-shadow: 0 0 8px #ffd700;
     }
 
-    /* Khu vực Bàn Xanh Lá & Điều Khiển phía dưới */
+    /* Bàn Điều Khiển Phía Dưới */
     .bottom-panel {
       background: radial-gradient(circle at center, #1b4d38 0%, #092117 100%);
       border-top: 3px solid #6b431e;
@@ -292,9 +313,7 @@
       font-weight: 800;
       color: #ffd97d;
     }
-    .wallet-item span.icon-mini { font-size: 0.9rem; }
 
-    /* Hàng nút điều khiển (Turbo, -, Quay, +, Auto) */
     .control-row {
       display: flex;
       justify-content: space-around;
@@ -320,7 +339,6 @@
       border-color: #fff;
       box-shadow: 0 0 10px #ffae00;
     }
-    /* Nút Quay Ổ Đạn Đồng ở giữa */
     .spin-revolver {
       width: 74px;
       height: 74px;
@@ -335,12 +353,10 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      transition: transform 0.15s ease;
     }
-    .spin-revolver:active { transform: scale(0.92); }
     .spin-revolver.spinning {
-      animation: rotateCylinder 0.6s linear infinite;
-      filter: brightness(1.15);
+      animation: rotateCylinder 1.2s linear infinite;
+      filter: brightness(1.1);
     }
     @keyframes rotateCylinder {
       from { transform: rotate(0deg); }
@@ -351,14 +367,14 @@
 <body>
 
 <div class="game-wrapper">
-  <!-- Thanh Chỉnh Tỷ Lệ Nổ Scatter Theo Ý Muốn -->
+  <!-- Thanh Chỉnh Tỷ Lệ Nổ Scatter -->
   <div class="admin-bar">
     <label for="scatterRange">Tỷ lệ Scatter: <span id="scatterValText">8%</span></label>
     <input type="range" id="scatterRange" min="2" max="40" value="8" oninput="updateScatterRate(this.value)">
     <button class="btn-force" id="forceScatterBtn" onclick="toggleForceScatter()">🎯 Ép nổ 3 Scatter</button>
   </div>
 
-  <!-- Mái Vòm Hệ Số Nhân (x1 -> x1024) -->
+  <!-- Mái Vòm Hệ Số Nhân -->
   <div class="top-arch">
     <div class="mult-item" id="mPrev">x512</div>
     <div class="mult-item active" id="mCurr">X1</div>
@@ -378,27 +394,26 @@
 
     <div class="reels-grid" id="reelsGrid"></div>
 
-    <!-- Nút TÍNH NĂNG MUA như trong video -->
     <div class="buy-feature-btn" onclick="buyFreeSpins()">
       TÍNH NĂNG<br>MUA
     </div>
   </div>
 
-  <!-- Thanh Thông Báo Thắng -->
+  <!-- Thanh Thông Báo Giữa -->
   <div class="marquee-box" id="marqueeBox">
-    Nhận WILD với Biểu tượng Khung Vàng!
+    Bấm nút Quay để bắt đầu!
   </div>
 
   <!-- Bàn Điều Khiển Phía Dưới -->
   <div class="bottom-panel">
     <div class="wallet-bar">
-      <div class="wallet-item"><span class="icon-mini">💼</span> đ<span id="balText">100.00</span></div>
-      <div class="wallet-item"><span class="icon-mini">🏆</span> đ<span id="winText">0.00</span></div>
-      <div class="wallet-item"><span class="icon-mini">🪙</span> đ<span id="betText">2.00</span></div>
+      <div class="wallet-item">💼 đ<span id="balText">100.00</span></div>
+      <div class="wallet-item">🏆 đ<span id="winText">0.00</span></div>
+      <div class="wallet-item">🪙 đ<span id="betText">2.00</span></div>
     </div>
 
     <div class="control-row">
-      <button class="ctrl-btn" id="turboBtn" onclick="toggleTurbo()" title="Quay Nhanh">⚡</button>
+      <button class="ctrl-btn" id="turboBtn" onclick="toggleTurbo()" title="Chế độ Nhanh/Chậm">⚡</button>
       <button class="ctrl-btn" onclick="adjustBet(-1)">−</button>
       <button class="spin-revolver" id="spinBtn" onclick="spin()">↻</button>
       <button class="ctrl-btn" onclick="adjustBet(1)">+</button>
@@ -408,11 +423,9 @@
 </div>
 
 <script>
-  // Cấu trúc 6 cột chuẩn: 3-4-5-5-4-3
   const COL_HEIGHTS = [3, 4, 5, 5, 4, 3];
   const BET_OPTIONS = [0.40, 1.00, 2.00, 5.00, 10.00, 20.00, 50.00];
 
-  // Danh sách biểu tượng khớp với video
   const SYMBOLS = [
     { id: 'BANDIT',  icon: '🤠', pay: 2.5, weight: 9 },
     { id: 'GUN',     icon: '🔫', pay: 1.5, weight: 12 },
@@ -426,18 +439,20 @@
   ];
 
   let balance = 100.00;
-  let betIdx = 2; // Mặc định đ2.00 giống trong video
+  let betIdx = 2;
   let roundWin = 0.00;
   let currentMult = 1;
-  let scatterProb = 0.08; // Mặc định 8% mỗi ô
+  let scatterProb = 0.08;
   let forceNextScatter = false;
   let freeSpinsLeft = 0;
   let isSpinning = false;
   let isTurbo = false;
   let isAuto = false;
   let board = [];
+  // Mảng lưu trạng thái cột nào đang quay
+  let spinningCols = [false, false, false, false, false, false];
+  let teaseCols = [false, false, false, false, false, false];
 
-  // Khởi tạo âm thanh tự động bằng Web Audio API
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playTone(freq, duration, type = 'sine') {
     try {
@@ -466,11 +481,9 @@
   }
 
   function createRandomCell(colIdx, allowScatter = true) {
-    // Kiểm tra rơi SCATTER dựa trên thanh trượt tỷ lệ của người dùng
     if (allowScatter && Math.random() < scatterProb) {
       return { id: 'SCATTER', icon: '🪙', pay: 0, isGold: false, explode: false, isNew: true };
     }
-
     const totalW = SYMBOLS.reduce((sum, s) => sum + s.weight, 0);
     let r = Math.random() * totalW;
     let chosen = SYMBOLS[0];
@@ -478,29 +491,24 @@
       if (r < s.weight) { chosen = s; break; }
       r -= s.weight;
     }
-
-    // Khung Vàng xuất hiện ở cột 2, 3, 4, 5 (index 1..4)
     const canGold = colIdx >= 1 && colIdx <= 4 && chosen.id !== 'WILD';
     const isGold = canGold && Math.random() < 0.25;
     return { ...chosen, isGold, explode: false, isNew: true };
   }
 
-  function generateBoard() {
+  function prepareBoardData() {
     board = COL_HEIGHTS.map((h, cIdx) => {
       const col = [];
       for (let r = 0; r < h; r++) {
-        // Không cho phép 2 Scatter nằm cùng 1 cột
         const hasScatterInCol = col.some(item => item.id === 'SCATTER');
         col.push(createRandomCell(cIdx, !hasScatterInCol));
       }
       return col;
     });
 
-    // Nếu bật nút "Ép nổ 3 Scatter", đặt chắc chắn 3 Scatter vào 3 cột ngẫu nhiên
     if (forceNextScatter) {
       const cols = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5).slice(0, 3);
       cols.forEach(c => {
-        // Xóa scatter cũ trong cột (nếu có) rồi gán 1 ô chắc chắn là SCATTER
         board[c].forEach(cell => { if (cell.id === 'SCATTER') Object.assign(cell, SYMBOLS[4]); });
         const randRow = Math.floor(Math.random() * COL_HEIGHTS[c]);
         board[c][randRow] = { id: 'SCATTER', icon: '🪙', pay: 0, isGold: false, explode: false, isNew: true };
@@ -508,35 +516,45 @@
       forceNextScatter = false;
       document.getElementById('forceScatterBtn').classList.remove('active');
     }
-
-    renderBoard();
   }
 
   function renderBoard() {
     const gridEl = document.getElementById('reelsGrid');
     gridEl.innerHTML = '';
 
-    board.forEach(col => {
+    board.forEach((col, cIdx) => {
       const colEl = document.createElement('div');
-      colEl.className = 'reel-col';
+      let colCls = 'reel-col';
+      if (spinningCols[cIdx]) colCls += ' spinning-col';
+      if (teaseCols[cIdx]) colCls += ' tease-col';
+      colEl.className = colCls;
+
       col.forEach(cell => {
         const el = document.createElement('div');
         let cls = 'symbol-cell';
-        if (cell.isGold) cls += ' gold-frame';
-        if (cell.id === 'WILD') cls += ' wild';
-        if (cell.id === 'SCATTER') cls += ' scatter';
-        if (cell.explode) cls += ' winning';
-        if (cell.isNew) cls += ' drop-in';
-        el.className = cls;
 
-        let tagHTML = '';
-        if (cell.id === 'WILD') tagHTML = '<span class="tag">WILD</span>';
-        else if (cell.id === 'SCATTER') tagHTML = '<span class="tag">SCATTER</span>';
-        else if (cell.isGold) tagHTML = '<span class="tag">KHUNG VÀNG</span>';
+        // Nếu cột đang quay thì hiện biểu tượng ngẫu nhiên mờ để tạo cảm giác cuộn
+        if (spinningCols[cIdx]) {
+          const fakeSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+          el.className = cls;
+          el.innerHTML = `<div class="icon">${fakeSym.icon}</div>`;
+        } else {
+          if (cell.isGold) cls += ' gold-frame';
+          if (cell.id === 'WILD') cls += ' wild';
+          if (cell.id === 'SCATTER') cls += ' scatter';
+          if (cell.explode) cls += ' winning';
+          if (cell.isNew) cls += ' drop-in';
+          el.className = cls;
 
-        el.innerHTML = `<div class="icon">${cell.icon}</div>${tagHTML}`;
+          let tagHTML = '';
+          if (cell.id === 'WILD') tagHTML = '<span class="tag">WILD</span>';
+          else if (cell.id === 'SCATTER') tagHTML = '<span class="tag">SCATTER</span>';
+          else if (cell.isGold) tagHTML = '<span class="tag">KHUNG VÀNG</span>';
+
+          el.innerHTML = `<div class="icon">${cell.icon}</div>${tagHTML}`;
+          cell.isNew = false;
+        }
         colEl.appendChild(el);
-        cell.isNew = false;
       });
       gridEl.appendChild(colEl);
     });
@@ -623,11 +641,10 @@
     isSpinning = true;
     const spinBtn = document.getElementById('spinBtn');
     spinBtn.classList.add('spinning');
-    playTone(220, 0.12, 'triangle');
 
     if (freeSpinsLeft > 0) {
       freeSpinsLeft--;
-      currentMult = 8; // Vòng quay miễn phí bắt đầu ở hệ số x8
+      currentMult = 8;
     } else {
       balance -= bet;
       roundWin = 0;
@@ -636,11 +653,50 @@
 
     updateArchUI(currentMult);
     updateWalletUI();
-    setMarquee('Thắng tới 3600 đường!', false);
+    setMarquee('Đang quay...', false);
 
-    generateBoard();
-    await wait(isTurbo ? 140 : 320);
+    // Chuẩn bị dữ liệu kết quả và bắt đầu cho cả 6 cột quay
+    prepareBoardData();
+    spinningCols = [true, true, true, true, true, true];
+    teaseCols = [false, false, false, false, false, false];
+    renderBoard();
 
+    // Thời gian khởi động cuộn quay ban đầu
+    await wait(isTurbo ? 200 : 500);
+
+    // Dừng lần lượt từng cột từ trái sang phải (Cột 1 -> Cột 6)
+    let landedScatters = 0;
+    for (let c = 0; c < 6; c++) {
+      // Nếu đã có 2 Scatter trên bàn, làm chậm cột tiếp theo để hồi hộp
+      if (landedScatters >= 2 && !isTurbo) {
+        teaseCols[c] = true;
+        renderBoard();
+        setMarquee('🔥 Đang chờ biểu tượng Scatter thứ 3...', true);
+        playTone(520, 0.35, 'sawtooth');
+        await wait(900); // Quay chậm hồi hộp 0.9 giây
+      } else {
+        await wait(isTurbo ? 120 : 380); // Mỗi cột dừng cách nhau 0.38 giây
+      }
+
+      spinningCols[c] = false;
+      teaseCols[c] = false;
+
+      // Kiểm tra cột vừa dừng có Scatter không
+      const hasScat = board[c].some(cell => cell.id === 'SCATTER');
+      if (hasScat) {
+        landedScatters++;
+        playTone(700 + landedScatters * 120, 0.25, 'triangle');
+      } else {
+        playTone(180 + c * 25, 0.1, 'sine'); // Tiếng "cạch" khi dừng cột
+      }
+
+      renderBoard();
+    }
+
+    // Nghỉ một nhịp sau khi cả 6 cột đã dừng hẳn để người chơi nhìn bàn cờ
+    await wait(isTurbo ? 250 : 600);
+
+    // Vòng lặp xét thưởng và nổ dây chuyền từ từ
     let step = 0;
     while (true) {
       const { foundWin, baseWin } = checkWins();
@@ -651,14 +707,15 @@
       roundWin = +(roundWin + winAmount).toFixed(2);
       balance = +(balance + winAmount).toFixed(2);
 
-      playTone(440 + step * 110, 0.25, 'sine');
+      playTone(400 + step * 90, 0.35, 'sine');
       renderBoard();
       updateWalletUI();
-      setMarquee(`THẮNG ${winAmount.toFixed(2)} (X${currentMult})`, true);
+      setMarquee(`💥 NỔ NHỊP ${step}: +${winAmount.toFixed(2)} (Nhân X${currentMult})`, true);
 
-      await wait(isTurbo ? 240 : 520);
+      // Chờ 0.95 giây để nhìn rõ các ô đang phát sáng ăn điểm
+      await wait(isTurbo ? 400 : 950);
 
-      // Xử lý Khung Vàng biến thành WILD và sụp đổ biểu tượng
+      // Biến Khung Vàng thành WILD và làm rơi các ô mới xuống
       for (let c = 0; c < 6; c++) {
         const survivors = [];
         board[c].forEach(cell => {
@@ -682,23 +739,26 @@
 
       currentMult = Math.min(1024, currentMult * 2);
       updateArchUI(currentMult);
+      playTone(300, 0.18, 'triangle');
       renderBoard();
-      await wait(isTurbo ? 180 : 350);
+
+      // Chờ 0.8 giây cho hiệu ứng rơi biểu tượng mới hoàn tất rồi mới xét nhịp tiếp theo
+      await wait(isTurbo ? 350 : 800);
     }
 
-    // Kiểm tra nổ SCATTER
+    // Kiểm tra tổng số Scatter sau khi dừng hết nhịp nổ
     let scatterTotal = 0;
     board.forEach(col => col.forEach(cell => { if (cell.id === 'SCATTER') scatterTotal++; }));
 
     if (scatterTotal >= 3) {
       const wonSpins = 10 + (scatterTotal - 3) * 2;
       freeSpinsLeft += wonSpins;
-      playTone(880, 0.5, 'square');
+      playTone(880, 0.6, 'square');
       setMarquee(`🎉 NỔ ${scatterTotal} SCATTER! +${wonSpins} VÒNG MIỄN PHÍ (X8)`, true);
       updateWalletUI();
-      await wait(1300);
+      await wait(1800);
     } else if (step > 0) {
-      setMarquee(`TỔNG THẮNG ${roundWin.toFixed(2)}`, true);
+      setMarquee(`🏆 TỔNG THẮNG: đ${roundWin.toFixed(2)}`, true);
     } else {
       setMarquee('3 biểu tượng Scatter sẽ kích hoạt 10 vòng quay miễn phí', false);
     }
@@ -707,15 +767,14 @@
     isSpinning = false;
 
     if (isAuto || freeSpinsLeft > 0) {
-      await wait(isTurbo ? 180 : 450);
+      await wait(isTurbo ? 400 : 1000);
       if (isAuto || freeSpinsLeft > 0) spin();
     }
   }
 
-  // Nút TÍNH NĂNG MUA giống trong video
   function buyFreeSpins() {
     if (isSpinning || freeSpinsLeft > 0) return;
-    const cost = +(BET_OPTIONS[betIdx] * 10).toFixed(2); // Giá mua ưu đãi 10x mức cược để dễ test
+    const cost = +(BET_OPTIONS[betIdx] * 10).toFixed(2);
     if (balance < cost) {
       setMarquee(`⚠️ Cần đ${cost.toFixed(2)} để Mua Tính Năng!`);
       return;
@@ -724,7 +783,7 @@
     roundWin = 0;
     forceNextScatter = true;
     updateWalletUI();
-    setMarquee('🔥 ĐÃ MUA TÍNH NĂNG! ĐANG QUAY RA 3 SCATTER...', true);
+    setMarquee('🔥 ĐÃ MUA TÍNH NĂNG! ĐANG QUAY TỪ TỪ RA 3 SCATTER...', true);
     spin();
   }
 
@@ -745,7 +804,8 @@
     if (isAuto && !isSpinning) spin();
   }
 
-  generateBoard();
+  prepareBoardData();
+  renderBoard();
   updateWalletUI();
 </script>
 </body>
