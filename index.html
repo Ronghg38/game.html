@@ -55,6 +55,7 @@
       letter-spacing: 0.5px;
     }
 
+    /* Thanh điều khiển ẩn mặc định */
     .control-bar {
       display: none;
       width: 100%;
@@ -92,6 +93,7 @@
       cursor: pointer;
     }
 
+    /* Bảng sửa ô thưởng ẩn mặc định, chỉ mở khi bấm 5 lần vào tiêu đề */
     .editor-panel {
       display: none;
       width: 100%;
@@ -295,6 +297,7 @@
 <body>
 
 <div class="app-container">
+  <!-- Chạm 5 lần liên tiếp vào tiêu đề này để mở/ẩn bảng cài đặt -->
   <div class="title-banner">
     <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
     <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
@@ -305,7 +308,6 @@
     <select id="forceSelect">
       <option value="-1">🎲 Ngẫu nhiên theo Tỷ lệ %</option>
     </select>
-    <button class="btn-edit" onclick="toggleEditor()">⚙️ Sửa ô</button>
   </div>
 
   <div class="editor-panel" id="editorPanel">
@@ -357,19 +359,19 @@
 </div>
 
 <script>
-  // TỶ LỆ MẶC ĐỊNH CHUẨN CÂN ĐỐI (TRỌNG SỐ TỰ NHIÊN ĐỂ VÒNG QUAY RƠI NGẪU NHIÊN ĐỀU)
+  // TỶ LỆ MẶC ĐỊNH THEO YÊU CẦU: May Mắn Lần Sau (50), Thêm 1 lượt (49), Tặng 1 Vé Số (1), các ô còn lại (0)
   const DEFAULT_PRIZES = [
-    { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 3,  color: '#b80f0a', text: '#ffd700' },
-    { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 10, color: '#fff3d1', text: '#6e0d05' },
-    { label: '💎 Trúng 4 Vé Số',     tickets: 4, weight: 5,  color: '#d46b08', text: '#ffffff' },
-    { label: '🍀 May Mắn Lần Sau',   tickets: 0, weight: 25, color: '#2b1204', text: '#f0c27b' },
-    { label: '💰 Trúng 5 vé số',     tickets: 5, weight: 8,  color: '#8f0b0b', text: '#ffd700' },
-    { label: '🎫 Tặng 2 Vé Số',      tickets: 2, weight: 15, color: '#fff3d1', text: '#6e0d05' },
-    { label: '💸 Tặng 1 Vé Số',      tickets: 1, weight: 15, color: '#b55400', text: '#ffffff' },
-    { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 19, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
+    { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 0,  color: '#b80f0a', text: '#ffd700' },
+    { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 0,  color: '#fff3d1', text: '#6e0d05' },
+    { label: '💎 Trúng 4 Vé Số',     tickets: 4, weight: 0,  color: '#d46b08', text: '#ffffff' },
+    { label: '🍀 May Mắn Lần Sau',   tickets: 0, weight: 50, color: '#2b1204', text: '#f0c27b' },
+    { label: '💰 Trúng 5 vé số',     tickets: 5, weight: 0,  color: '#8f0b0b', text: '#ffd700' },
+    { label: '🎫 Tặng 2 Vé Số',      tickets: 2, weight: 0,  color: '#fff3d1', text: '#6e0d05' },
+    { label: '💸 Tặng 1 Vé Số',      tickets: 1, weight: 1,  color: '#b55400', text: '#ffffff' },
+    { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 49, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
 
-  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V2')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V3')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
@@ -382,6 +384,7 @@
   let totalTickets = 0;
   let historyList = [];
 
+  // Chạm liên tiếp 5 lần vào tiêu đề để mở/ẩn bảng cài đặt
   let secretTapCount = 0;
   let secretTapTimer = null;
   function secretAdminTrigger() {
@@ -390,10 +393,9 @@
     if (secretTapCount >= 5) {
       secretTapCount = 0;
       const bar = document.getElementById('secretControlBar');
+      const panel = document.getElementById('editorPanel');
       bar.classList.toggle('secret-open');
-      if (!bar.classList.contains('secret-open')) {
-        document.getElementById('editorPanel').classList.remove('open');
-      }
+      panel.classList.toggle('open');
     } else {
       secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1200);
     }
@@ -675,30 +677,24 @@
     `).join('');
   }
 
-  function toggleEditor() {
-    document.getElementById('editorPanel').classList.toggle('open');
-  }
-
   function saveEditor() {
     PRIZES.forEach((p, idx) => {
       p.label = document.getElementById(`lbl_${idx}`).value || p.label;
       p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
-    localStorage.setItem('PHAT_DAT_WHEEL_V2', JSON.stringify(PRIZES));
+    localStorage.setItem('PHAT_DAT_WHEEL_V3', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
-    document.getElementById('editorPanel').classList.remove('open');
     resultBanner.textContent = '✅ Đã lưu cố định danh sách giải thưởng!';
   }
 
   function resetDefaultPrizes() {
-    localStorage.removeItem('PHAT_DAT_WHEEL_V2');
+    localStorage.removeItem('PHAT_DAT_WHEEL_V3');
     PRIZES = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
     populateControls();
     drawWheel();
-    document.getElementById('editorPanel').classList.remove('open');
-    resultBanner.textContent = '🔄 Đã khôi phục tỷ lệ mặc định ngẫu nhiên!';
+    resultBanner.textContent = '🔄 Đã khôi phục tỷ lệ mặc định (50, 49, 1)!';
   }
 
   populateControls();
