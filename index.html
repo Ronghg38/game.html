@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Vòng Quay May Mắn - Siêu Phần Thưởng</title>
+  <title>Vòng Quay Vé Số Phát Đạt</title>
   <style>
     :root {
       --gold: #ffd700;
@@ -20,7 +20,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 10px;
+      padding: 12px 10px;
       overflow-x: hidden;
     }
 
@@ -30,22 +30,25 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
-    /* Thanh Điều Khiển Kết Quả (Admin) */
+    /* Thanh Điều Khiển Kết Quả (ĐÃ ẨN MẶC ĐỊNH - Chạm 5 lần vào tiêu đề để mở) */
     .control-bar {
+      display: none;
       width: 100%;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.85);
       border: 1px solid var(--gold);
       border-radius: 10px;
       padding: 8px 10px;
-      display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 6px;
       font-size: 0.78rem;
+    }
+    .control-bar.secret-open {
+      display: flex;
     }
     .control-bar label {
       color: var(--gold);
@@ -72,33 +75,37 @@
       cursor: pointer;
     }
 
-    /* Tiêu đề & Ví thưởng */
+    /* Tiêu đề Vòng Quay Vé Số Phát Đạt */
     .title-banner {
       text-align: center;
+      margin-top: 4px;
     }
     .title-banner h1 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       text-transform: uppercase;
       color: var(--gold);
       text-shadow: 0 2px 8px #ff4500, 0 0 15px #000;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
+      cursor: pointer;
     }
+
+    /* Hộp hiển thị Tổng Tiền Thưởng (Đã bỏ 10 lượt quay) */
     .stats-bar {
       width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      display: flex;
+      justify-content: center;
     }
     .stat-card {
+      width: 100%;
       background: linear-gradient(180deg, #380909, #1c0404);
       border: 1.5px solid #a8741a;
-      border-radius: 10px;
-      padding: 6px 10px;
+      border-radius: 12px;
+      padding: 8px 14px;
       text-align: center;
       box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
     }
-    .stat-card .lbl { font-size: 0.7rem; color: #e0b872; }
-    .stat-card .val { font-size: 1.05rem; font-weight: 900; color: #fff; margin-top: 2px; }
+    .stat-card .lbl { font-size: 0.72rem; color: #e0b872; font-weight: bold; letter-spacing: 0.5px; }
+    .stat-card .val { font-size: 1.2rem; font-weight: 900; color: var(--gold); margin-top: 2px; }
 
     /* Khung Vòng Quay */
     .wheel-stage {
@@ -108,9 +115,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 8px 0;
+      margin: 6px 0;
     }
-    /* Vành ngoài có đèn LED nhấp nháy */
     .outer-rim {
       position: absolute;
       inset: 0;
@@ -200,7 +206,7 @@
       box-shadow: 0 0 20px #ffd700;
     }
 
-    /* Bảng Tùy Chỉnh Ô Thưởng & Tỷ Lệ */
+    /* Bảng Tùy Chỉnh Ô Thưởng & Tỷ Lệ (Ẩn) */
     .editor-panel {
       display: none;
       width: 100%;
@@ -208,7 +214,6 @@
       border: 1.5px solid var(--gold);
       border-radius: 12px;
       padding: 10px;
-      margin-top: 6px;
     }
     .editor-panel.open { display: block; }
     .editor-row {
@@ -241,7 +246,7 @@
       border: 1px solid #5c2810;
       border-radius: 10px;
       padding: 8px 12px;
-      max-height: 110px;
+      max-height: 115px;
       overflow-y: auto;
       font-size: 0.78rem;
     }
@@ -257,8 +262,13 @@
 <body>
 
 <div class="app-container">
-  <!-- Thanh Chỉnh Tỷ Lệ / Ép Kết Quả -->
-  <div class="control-bar">
+  <!-- Tiêu đề (Chạm 5 lần liên tiếp vào tiêu đề nếu chủ web muốn bật bảng chỉnh ngầm) -->
+  <div class="title-banner">
+    <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
+  </div>
+
+  <!-- Thanh Chỉnh Tỷ Lệ / Ép Kết Quả (Đã ẩn mặc định) -->
+  <div class="control-bar" id="secretControlBar">
     <label for="forceSelect">🎯 Chế độ ra giải:</label>
     <select id="forceSelect">
       <option value="-1">🎲 Ngẫu nhiên theo Tỷ lệ %</option>
@@ -266,7 +276,7 @@
     <button class="btn-edit" onclick="toggleEditor()">⚙️ Sửa ô</button>
   </div>
 
-  <!-- Bảng Sửa Tên Giải & Tỷ Lệ % -->
+  <!-- Bảng Sửa Tên Giải & Tỷ Lệ % (Đã ẩn mặc định) -->
   <div class="editor-panel" id="editorPanel">
     <div class="editor-row editor-header">
       <span>Tên ô thưởng</span>
@@ -277,20 +287,11 @@
     <button class="btn-edit" style="width:100%; margin-top:4px; padding:7px;" onclick="saveEditor()">💾 LƯU CẬP NHẬT VÒNG QUAY</button>
   </div>
 
-  <!-- Tiêu đề -->
-  <div class="title-banner">
-    <h1>🎡 Vòng Quay Đại Cát</h1>
-  </div>
-
-  <!-- Thống kê Tổng Thưởng & Lượt Quay -->
+  <!-- Thống kê Tổng Tiền Thưởng -->
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="lbl">TỔNG TIỀN THƯỞNG</div>
+      <div class="lbl">TỔNG TIỀN THƯỞNG NHẬN ĐƯỢC</div>
       <div class="val" id="totalMoneyEl">0 đ</div>
-    </div>
-    <div class="stat-card">
-      <div class="lbl">LƯỢT QUAY CÒN LẠI</div>
-      <div class="val" id="spinsLeftEl" style="color: var(--gold);">10</div>
     </div>
   </div>
 
@@ -323,14 +324,14 @@
 </div>
 
 <script>
-  // Danh sách 8 ô phần thưởng mặc định (có thể chỉnh sửa ngay trên web)
+  // Danh sách 8 ô phần thưởng chuẩn chủ đề Vé Số Phát Đạt
   let PRIZES = [
     { label: '🎁 ĐẶC BIỆT 5TR', value: 5000000, weight: 2,  color: '#b80f0a', text: '#ffd700' },
     { label: '💵 100.000đ',      value: 100000,  weight: 18, color: '#fff3d1', text: '#5c0c06' },
-    { label: '💎 NỔ HŨ 1TR',     value: 1000000, weight: 5,  color: '#d46b08', text: '#ffffff' },
+    { label: '💎 LỘC PHÁT 1TR',  value: 1000000, weight: 5,  color: '#d46b08', text: '#ffffff' },
     { label: '🍀 May Mắn Lần Sau',value: 0,      weight: 25, color: '#2b1204', text: '#cfa670' },
     { label: '💰 500.000đ',      value: 500000,  weight: 10, color: '#8f0b0b', text: '#ffd700' },
-    { label: '🔄 Thêm 2 Lượt',   value: 0,       weight: 15, color: '#fff3d1', text: '#5c0c06', addSpin: 2 },
+    { label: '🎫 Tặng 2 Vé Số',  value: 20000,   weight: 15, color: '#fff3d1', text: '#5c0c06' },
     { label: '💸 200.000đ',      value: 200000,  weight: 12, color: '#b55400', text: '#ffffff' },
     { label: '🪙 50.000đ',       value: 50000,   weight: 13, color: '#3b0909', text: '#ffd700' }
   ];
@@ -341,13 +342,30 @@
   const spinBtn = document.getElementById('spinBtn');
   const resultBanner = document.getElementById('resultBanner');
 
-  let currentAngle = 0; // Góc quay hiện tại (radian)
+  let currentAngle = 0;
   let isSpinning = false;
   let totalMoney = 0;
-  let spinsLeft = 10;
   let historyList = [];
 
-  // Khởi tạo bộ tạo âm thanh Web Audio API (Tiếng tạch tạch & Nhạc trúng giải)
+  // Cơ chế mở khóa ẩn cho chủ web (Chạm 5 lần liên tiếp vào tiêu đề)
+  let secretTapCount = 0;
+  let secretTapTimer = null;
+  function secretAdminTrigger() {
+    secretTapCount++;
+    clearTimeout(secretTapTimer);
+    if (secretTapCount >= 5) {
+      secretTapCount = 0;
+      const bar = document.getElementById('secretControlBar');
+      bar.classList.toggle('secret-open');
+      if (!bar.classList.contains('secret-open')) {
+        document.getElementById('editorPanel').classList.remove('open');
+      }
+    } else {
+      secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1200);
+    }
+  }
+
+  // Âm thanh Web Audio API
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playTickSound() {
     try {
@@ -385,7 +403,7 @@
     } catch (e) {}
   }
 
-  // Vẽ bàn xoay Canvas
+  // Vẽ bàn xoay
   function drawWheel() {
     const N = PRIZES.length;
     const arc = (2 * Math.PI) / N;
@@ -399,7 +417,6 @@
       const start = currentAngle + i * arc;
       const end = start + arc;
 
-      // Vẽ múi quạt
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, radius, start, end);
@@ -410,7 +427,6 @@
       ctx.strokeStyle = '#ffd700';
       ctx.stroke();
 
-      // Vẽ chữ trên từng ô
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(start + arc / 2);
@@ -420,7 +436,6 @@
       ctx.fillText(PRIZES[i].label, radius - 26, 7);
       ctx.restore();
 
-      // Vẽ đinh tán vàng ở rìa mỗi múi
       const pegX = cx + Math.cos(start) * (radius - 6);
       const pegY = cy + Math.sin(start) * (radius - 6);
       ctx.beginPath();
@@ -433,7 +448,6 @@
     }
   }
 
-  // Chọn ô thắng theo trọng số hoặc theo chế độ Ép kết quả
   function pickWinnerIndex() {
     const forced = parseInt(document.getElementById('forceSelect').value, 10);
     if (forced >= 0 && forced < PRIZES.length) {
@@ -449,21 +463,15 @@
     return 0;
   }
 
-  // Hàm làm mượt giảm tốc từ từ (Ease-Out Quintic: quay nhanh đầu, rà chậm dần rất lâu ở cuối)
   function easeOutQuint(t) {
     return 1 - Math.pow(1 - t, 5);
   }
 
   function startSpin() {
     if (isSpinning) return;
-    if (spinsLeft <= 0) {
-      spinsLeft = 10; // Tự động cấp lại 10 lượt nếu hết
-    }
 
     isSpinning = true;
     spinBtn.disabled = true;
-    spinsLeft--;
-    updateStatsUI();
 
     resultBanner.classList.remove('winner');
     resultBanner.textContent = '🎡 Vòng quay đang chạy chậm dần...';
@@ -472,8 +480,6 @@
     const arc = (2 * Math.PI) / N;
     const winIdx = pickWinnerIndex();
 
-    // Tính góc dừng chính xác để ô winIdx nằm ngay dưới kim chỉ 12 giờ (-Math.PI / 2)
-    // Cộng thêm độ lệch ngẫu nhiên nhỏ trong lòng ô để nhìn tự nhiên
     const randomInSector = (Math.random() - 0.5) * 0.55;
     const pointerAngle = -Math.PI / 2;
     let targetMod = (pointerAngle - (winIdx + 0.5 + randomInSector) * arc) % (2 * Math.PI);
@@ -485,7 +491,6 @@
     let delta = targetMod - currentMod;
     if (delta < 0) delta += 2 * Math.PI;
 
-    // Quay đủ 8 vòng lớn + góc lệch trong suốt 6.8 giây (6800ms) để hãm tốc từ từ
     const fullSpins = 8 * 2 * Math.PI;
     const totalRotation = fullSpins + delta;
     const startAngle = currentAngle;
@@ -502,7 +507,6 @@
       currentAngle = startAngle + totalRotation * eased;
       drawWheel();
 
-      // Kiểm tra mỗi khi vạch ngăn cách lướt qua kim chỉ 12 giờ để gảy kim & kêu "Tạch"
       const currentPegIndex = Math.floor(((currentAngle - pointerAngle) / arc));
       if (currentPegIndex !== lastPegIndex) {
         lastPegIndex = currentPegIndex;
@@ -528,16 +532,10 @@
       playWinFanfare(prize.value >= 500000);
       resultBanner.classList.add('winner');
       resultBanner.textContent = `🎉 CHÚC MỪNG! BẠN TRÚNG: ${prize.label}`;
-    } else if (prize.addSpin) {
-      spinsLeft += prize.addSpin;
-      playWinFanfare(false);
-      resultBanner.classList.add('winner');
-      resultBanner.textContent = `🎁 TUYỆT VỜI! BẠN ĐƯỢC +${prize.addSpin} LƯỢT QUAY!`;
     } else {
-      resultBanner.textContent = `🍀 Kết quả: ${prize.label} — Thử lại nhé!`;
+      resultBanner.textContent = `🍀 Kết quả: ${prize.label} — Quay tiếp nhé!`;
     }
 
-    // Lưu lịch sử
     const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     historyList.unshift({ time: timeStr, label: prize.label });
     renderHistory();
@@ -549,20 +547,18 @@
 
   function updateStatsUI() {
     document.getElementById('totalMoneyEl').textContent = totalMoney.toLocaleString('vi-VN') + ' đ';
-    document.getElementById('spinsLeftEl').textContent = spinsLeft;
   }
 
   function renderHistory() {
     const box = document.getElementById('historyBox');
     box.innerHTML = historyList.slice(0, 8).map((item, i) => `
       <div class="history-item">
-        <span>#${historyList.length - i} (${item.time})</span>
+        <span>Lần #${historyList.length - i} (${item.time})</span>
         <strong>${item.label}</strong>
       </div>
     `).join('');
   }
 
-  // Khởi tạo menu chọn ép kết quả & bảng chỉnh sửa
   function populateControls() {
     const sel = document.getElementById('forceSelect');
     const currentVal = sel.value;
@@ -593,7 +589,7 @@
     populateControls();
     drawWheel();
     document.getElementById('editorPanel').classList.remove('open');
-    resultBanner.textContent = '✅ Đã cập nhật danh sách giải thưởng & tỷ lệ!';
+    resultBanner.textContent = '✅ Đã lưu danh sách giải thưởng & tỷ lệ!';
   }
 
   populateControls();
