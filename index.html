@@ -33,7 +33,6 @@
       position: relative;
     }
 
-    /* Tiêu đề chính (Chạm 5 lần liên tiếp để mở bảng cài đặt ẩn) */
     .title-banner {
       text-align: center;
       padding: 4px 10px;
@@ -56,7 +55,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* Thanh Điều Khiển Ẩn (Chạm 5 lần vào tiêu đề mới hiện) */
     .control-bar {
       display: none;
       width: 100%;
@@ -94,7 +92,6 @@
       cursor: pointer;
     }
 
-    /* Bảng Sửa Ô Thưởng (Lưu vào bộ nhớ trình duyệt) */
     .editor-panel {
       display: none;
       width: 100%;
@@ -133,7 +130,6 @@
       margin-top: 6px;
     }
 
-    /* Hộp thống kê Lộc Vé Số */
     .stats-bar {
       width: 100%;
       display: grid;
@@ -162,7 +158,6 @@
       text-shadow: 0 1px 4px #000;
     }
 
-    /* Khu vực Vòng Quay */
     .wheel-stage {
       position: relative;
       width: 356px;
@@ -172,7 +167,6 @@
       align-items: center;
       margin: 4px 0;
     }
-    /* Vành vàng 3D + Đèn LED xung quanh */
     .outer-rim {
       position: absolute;
       inset: 0;
@@ -196,7 +190,6 @@
       display: block;
     }
 
-    /* Kim chỉ vị trí 12 giờ */
     .pointer {
       position: absolute;
       top: -12px;
@@ -213,7 +206,6 @@
       transform: translateX(-50%) rotate(-24deg);
     }
 
-    /* Nút QUAY ở tâm (Thiết kế gọn gàng không che chữ) */
     .center-spin-btn {
       position: absolute;
       width: 72px;
@@ -240,7 +232,6 @@
       cursor: not-allowed;
     }
 
-    /* Hộp Thông Báo Trúng Giải */
     .result-banner {
       width: 100%;
       min-height: 46px;
@@ -266,7 +257,6 @@
       transform: scale(1.02);
     }
 
-    /* Lịch sử trúng thưởng */
     .history-box {
       width: 100%;
       background: rgba(0, 0, 0, 0.45);
@@ -285,7 +275,6 @@
       color: #ffe0a3;
     }
 
-    /* Hiệu ứng pháo giấy kim tuyến */
     .confetti {
       position: fixed;
       width: 9px;
@@ -306,13 +295,11 @@
 <body>
 
 <div class="app-container">
-  <!-- Tiêu đề (Chạm 5 lần liên tiếp vào tiêu đề nếu chủ web muốn mở bảng cài đặt ẩn) -->
   <div class="title-banner">
     <h1 onclick="secretAdminTrigger()">🎡 Vòng Quay Vé Số Phát Đạt</h1>
     <div class="sub">✨ Quay Liền Tay — Rước Ngay Lộc Lớn ✨</div>
   </div>
 
-  <!-- Thanh Chỉnh Tỷ Lệ / Ép Kết Quả (Ẩn mặc định) -->
   <div class="control-bar" id="secretControlBar">
     <label for="forceSelect">🎯 Chế độ ra giải:</label>
     <select id="forceSelect">
@@ -321,7 +308,6 @@
     <button class="btn-edit" onclick="toggleEditor()">⚙️ Sửa ô</button>
   </div>
 
-  <!-- Bảng Sửa Tên Giải & Tỷ Lệ % (Ẩn mặc định) -->
   <div class="editor-panel" id="editorPanel">
     <div class="editor-row editor-header">
       <span>Tên ô thưởng</span>
@@ -335,7 +321,6 @@
     </div>
   </div>
 
-  <!-- Thống kê Tổng Vé Số & Giải Vừa Trúng -->
   <div class="stats-bar">
     <div class="stat-card">
       <div class="lbl">🎫 Tổng Vé Số Nhận Được</div>
@@ -347,9 +332,7 @@
     </div>
   </div>
 
-  <!-- Bàn Vòng Quay -->
   <div class="wheel-stage">
-    <!-- Kim chỉ 12h -->
     <svg class="pointer" id="pointerEl" viewBox="0 0 40 52">
       <polygon points="20,50 4,14 36,14" fill="#ff1e00" stroke="#ffd700" stroke-width="3"/>
       <circle cx="20" cy="14" r="9" fill="#ffd700" stroke="#fff" stroke-width="2.5"/>
@@ -364,31 +347,28 @@
     <button class="center-spin-btn" id="spinBtn" onclick="startSpin()">QUAY</button>
   </div>
 
-  <!-- Thông báo kết quả -->
   <div class="result-banner" id="resultBanner">
     Bấm nút QUAY ở giữa để thử vận may!
   </div>
 
-  <!-- Lịch sử trúng thưởng -->
   <div class="history-box" id="historyBox">
     <div style="color:#aaa; text-align:center;">Chưa có lịch sử quay</div>
   </div>
 </div>
 
 <script>
-  // DANH SÁCH 8 Ô THƯỞNG CỐ ĐỊNH CHUẨN NHƯ HÌNH CỦA BẠN
+  // TỶ LỆ MẶC ĐỊNH CHUẨN CÂN ĐỐI (TRỌNG SỐ TỰ NHIÊN ĐỂ VÒNG QUAY RƠI NGẪU NHIÊN ĐỀU)
   const DEFAULT_PRIZES = [
-    { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 2,  color: '#b80f0a', text: '#ffd700' },
-    { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 18, color: '#fff3d1', text: '#6e0d05' },
+    { label: '🎁 ĐẶC BIỆT Hoàn Vé', tickets: 1, weight: 3,  color: '#b80f0a', text: '#ffd700' },
+    { label: '💵 Trúng 3 vé số',     tickets: 3, weight: 10, color: '#fff3d1', text: '#6e0d05' },
     { label: '💎 Trúng 4 Vé Số',     tickets: 4, weight: 5,  color: '#d46b08', text: '#ffffff' },
     { label: '🍀 May Mắn Lần Sau',   tickets: 0, weight: 25, color: '#2b1204', text: '#f0c27b' },
-    { label: '💰 Trúng 5 vé số',     tickets: 5, weight: 10, color: '#8f0b0b', text: '#ffd700' },
+    { label: '💰 Trúng 5 vé số',     tickets: 5, weight: 8,  color: '#8f0b0b', text: '#ffd700' },
     { label: '🎫 Tặng 2 Vé Số',      tickets: 2, weight: 15, color: '#fff3d1', text: '#6e0d05' },
-    { label: '💸 Tặng 1 Vé Số',      tickets: 1, weight: 12, color: '#b55400', text: '#ffffff' },
-    { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 13, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
+    { label: '💸 Tặng 1 Vé Số',      tickets: 1, weight: 15, color: '#b55400', text: '#ffffff' },
+    { label: '🪙 Thêm 1 lượt',       tickets: 0, weight: 19, color: '#3b0909', text: '#ffd700', isExtraSpin: true }
   ];
 
-  // Đọc từ bộ nhớ trình duyệt (nếu bạn có chỉnh sửa và bấm Lưu), nếu chưa thì lấy chuẩn 8 ô trên
   let PRIZES = JSON.parse(localStorage.getItem('PHAT_DAT_WHEEL_V2')) || JSON.parse(JSON.stringify(DEFAULT_PRIZES));
 
   const canvas = document.getElementById('wheelCanvas');
@@ -402,7 +382,6 @@
   let totalTickets = 0;
   let historyList = [];
 
-  // Mở khóa bảng chỉnh ngầm khi chạm 5 lần vào tiêu đề
   let secretTapCount = 0;
   let secretTapTimer = null;
   function secretAdminTrigger() {
@@ -420,7 +399,6 @@
     }
   }
 
-  // Âm thanh Web Audio API
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playTickSound() {
     try {
@@ -458,14 +436,12 @@
     } catch (e) {}
   }
 
-  // Tách riêng Icon ở đầu và chia chữ thành 2 dòng cân đối để KHÔNG BAO GIỜ bị nút QUAY che
   function parsePrizeText(rawLabel) {
     const trimmed = (rawLabel || '').trim();
     const parts = trimmed.split(/\s+/);
     let icon = '';
     let words = parts;
 
-    // Kiểm tra từ đầu tiên có phải là Emoji/Icon không
     if (parts.length > 1 && /[^\w\sÀ-ỹ]/u.test(parts[0])) {
       icon = parts[0];
       words = parts.slice(1);
@@ -482,7 +458,6 @@
     };
   }
 
-  // Vẽ bàn xoay sắc nét, chống tràn chữ
   function drawWheel() {
     const N = PRIZES.length;
     const arc = (2 * Math.PI) / N;
@@ -497,7 +472,6 @@
       const end = start + arc;
       const midAngle = start + arc / 2;
 
-      // 1. Vẽ múi quạt
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, radius, start, end);
@@ -505,19 +479,16 @@
       ctx.fillStyle = PRIZES[i].color;
       ctx.fill();
 
-      // Viền vàng phân cách múi
       ctx.lineWidth = 3.5;
       ctx.strokeStyle = '#ffd700';
       ctx.stroke();
 
-      // 2. Vẽ Icon và Chữ (Nằm gọn trong vùng an toàn từ r=86 đến r=230, không chạm nút QUAY)
       const { icon, line1, line2 } = parsePrizeText(PRIZES[i].label);
 
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(midAngle);
 
-      // Vẽ Icon lớn ở sát mép ngoài rộng rãi (r = 216)
       if (icon) {
         ctx.font = '28px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
         ctx.textAlign = 'center';
@@ -525,14 +496,12 @@
         ctx.fillText(icon, 214, 0);
       }
 
-      // Vẽ Chữ nằm ở khoảng giữa múi (r = 138), có viền mảnh giúp nổi bật tuyệt đối
       const textCenterR = icon ? 136 : 154;
-      const maxTextWidth = 112; // Giới hạn chiều dài để cách xa nút QUAY ở tâm
+      const maxTextWidth = 112;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = '900 20px "Segoe UI", Roboto, sans-serif';
 
-      // Đổ bóng chữ giúp đọc cực rõ trên cả nền sáng và tối
       ctx.shadowColor = PRIZES[i].color === '#fff3d1' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.85)';
       ctx.shadowBlur = 4;
       ctx.fillStyle = PRIZES[i].text;
@@ -545,7 +514,6 @@
       }
       ctx.restore();
 
-      // 3. Vẽ chốt đinh tán vàng ở rìa mỗi múi
       const pegX = cx + Math.cos(start) * (radius - 7);
       const pegY = cy + Math.sin(start) * (radius - 7);
       ctx.beginPath();
@@ -717,7 +685,6 @@
       p.tickets = parseInt(document.getElementById(`tkt_${idx}`).value, 10) || 0;
       p.weight = parseFloat(document.getElementById(`wei_${idx}`).value) || 0;
     });
-    // Lưu vĩnh viễn vào bộ nhớ trình duyệt để tải lại trang không bị mất
     localStorage.setItem('PHAT_DAT_WHEEL_V2', JSON.stringify(PRIZES));
     populateControls();
     drawWheel();
@@ -731,7 +698,7 @@
     populateControls();
     drawWheel();
     document.getElementById('editorPanel').classList.remove('open');
-    resultBanner.textContent = '🔄 Đã khôi phục 8 ô giải thưởng mặc định!';
+    resultBanner.textContent = '🔄 Đã khôi phục tỷ lệ mặc định ngẫu nhiên!';
   }
 
   populateControls();
